@@ -1,17 +1,4 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    Patch,
-    Put,
-    Req,
-    UseGuards,
-    UsePipes,
-    ValidationPipe,
-    Post,
-} from '@nestjs/common';
+import {Body,Controller,Delete,Get,Param,Patch,Put,Req,UseGuards,UsePipes,ValidationPipe,Post,} from '@nestjs/common';
 import type { Request } from 'express';
 
 import { AgentService } from './agent.service';

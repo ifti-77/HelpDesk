@@ -19,14 +19,14 @@ export class AuthService {
 
             const { email, password } = loginDto;
 
-            const user = await this.userRepository.findOne({ where: { email } });
+            const user = await this.userRepository.findOne({ where: { email: loginDto.email } });
             if (!user) {
-                throw new BadRequestException('Invalid email');
+                throw new BadRequestException('Invalid email')
             }
 
-            const isMatch = await bcrypt.compare(password, user.passwordHash);
+            const isMatch = await bcrypt.compare(loginDto.password, user.passwordHash);
             if (!isMatch) {
-                throw new BadRequestException('Invalid password');
+                throw new BadRequestException('Invalid password')
             }
 
             const payload = { id: user.id, role: user.role };
@@ -45,7 +45,7 @@ export class AuthService {
                 throw error;
             }
 
-            throw new BadRequestException('Login failed');
+            throw error
         }
     }
 }

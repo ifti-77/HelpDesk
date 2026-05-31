@@ -1,17 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Put,
-  Req,
-  UseGuards,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import {Body,Controller,Delete,Get,Param,Patch,Post,Put,Req,UseGuards,UsePipes,ValidationPipe,} from '@nestjs/common';
 import type { Request } from 'express';
 
 import { AdminService } from './admin.service';
@@ -20,6 +7,7 @@ import { EmployeeUpdateDto } from '../employee/DTOs/employeeUpdate.dto';
 import { TicketCreateDto } from '../employee/DTOs/ticketCreate.dto';
 import { TicketPriority, TicketStatus } from '../entities/ticket.entity';
 import { UserRole } from '../entities/user.entity';
+import { CreateUserDto } from './DTOs/createUser.dto';
 
 interface AuthRequest extends Request {
   user: { id: string; role: string };
@@ -28,7 +16,7 @@ interface AuthRequest extends Request {
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
-
+  
   @Get('profile')
   @UseGuards(AdminGuard)
   GetAdminProfile(@Req() request: AuthRequest) {
@@ -60,7 +48,7 @@ export class AdminController {
   @Post('users')
   @UseGuards(AdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  CreateUser(@Body() userData: any, @Req() request: AuthRequest) {
+  CreateUser(@Body() userData: CreateUserDto, @Req() request: AuthRequest) {
     return this.adminService.CreateUser(request.user.id, userData);
   }
 

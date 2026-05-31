@@ -4,6 +4,7 @@ import { EmployeeModule } from './employee/employee.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { AgentModule } from './agent/agent.module';
+import { ConfigModule} from '@nestjs/config'
 
 
 @Module({
@@ -13,8 +14,10 @@ import { AgentModule } from './agent/agent.module';
     port: 5432,
     username: 'postgres',
     password: '0000',
-    database: 'help_desk'
-  }),],
+    database: 'help_desk',
+    autoLoadEntities: true,
+    synchronize: true,
+  }), ConfigModule.forRoot({ isGlobal: true })],
   controllers: [],
   providers: [],
 })

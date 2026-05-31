@@ -1,24 +1,15 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import {BadRequestException,ForbiddenException,Injectable,NotFoundException,UnauthorizedException,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
 import { UserEntity, UserRole } from '../entities/user.entity';
-import {
-  TicketEntity,
-  TicketPriority,
-  TicketStatus,
-} from '../entities/ticket.entity';
+import {TicketEntity,TicketPriority,TicketStatus,} from '../entities/ticket.entity';
 import { TicketCommentEntity } from '../entities/ticketComment.entity';
 
 import { EmployeeUpdateDto } from '../employee/DTOs/employeeUpdate.dto';
 import { TicketCreateDto } from '../employee/DTOs/ticketCreate.dto';
+import { CreateUserDto } from './DTOs/createUser.dto';
 
 @Injectable()
 export class AdminService {
@@ -153,7 +144,7 @@ export class AdminService {
     return savedAdmin;
   }
 
-  async CreateUser(adminId: string, userData: any): Promise<UserEntity | null> {
+  async CreateUser(adminId: string, userData: CreateUserDto): Promise<UserEntity | null> {
     await this.getAdminById(adminId);
 
     if (!userData.name || !userData.email || !userData.password) {
@@ -184,7 +175,6 @@ export class AdminService {
       email: userData.email,
       passwordHash: hashedPassword,
       role: userData.role ?? UserRole.EMPLOYEE,
-      isActive: userData.isActive ?? true,
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -325,12 +315,6 @@ export class AdminService {
     if (adminId === userId) {
       throw new ForbiddenException('You cannot delete your own account');
     }
-
-    /*
-      Safer than hard delete:
-      keep old tickets/comments history,
-      only deactivate the user.
-    */
     user.isActive = false;
 
     await this.userRepository.save(user);

@@ -1,17 +1,13 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import {CanActivate,ExecutionContext,ForbiddenException,Injectable,UnauthorizedException,} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserRole } from '../entities/user.entity';
-
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class EmployeeGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService,
+    private readonly configService: ConfigService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -24,7 +20,7 @@ export class EmployeeGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET,
+        secret: this.configService.get<string>('JWT_SECRET'),
       });
 
       if (!payload?.id || !payload?.role) {
