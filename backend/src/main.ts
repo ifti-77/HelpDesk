@@ -10,7 +10,9 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: `${process.env.SERVER_ADDRESS}:${process.env.PORT}`,
+    origin: `${process.env.SERVER_ADDRESS}:${process.env.FRONTEND_PORT}`,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   });
 
