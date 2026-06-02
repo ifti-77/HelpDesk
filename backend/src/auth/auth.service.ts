@@ -1,10 +1,10 @@
-import { BadRequestException, Body, Injectable, InternalServerErrorException, Res, UnauthorizedException } from "@nestjs/common";
+import { BadGatewayException, BadRequestException, Body, Injectable, InternalServerErrorException, Res, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserEntity, UserRole } from "../entities/user.entity";
 import { Repository } from "typeorm";
 import { LoginDTO } from "./DTOs/login.dto";
 import * as bcrypt from 'bcrypt';
-import { Response } from "express";
+import { Request, Response } from "express";
 import { JwtService } from "@nestjs/jwt";
 
 
@@ -17,24 +17,29 @@ export class AuthService {
     async Login(loginDto: LoginDTO, res: Response): Promise<{ message: string } | null> {
         try {
 
-            const user = await this.userRepository.findOne({ where: { email: loginDto.email } });
+            const user = await this.userRepository.findOne({ where: { email: loginDto.email } })
             if (!user) {
                 throw new BadRequestException('No user with this email found')
             }
 
-            const isMatch = await bcrypt.compare(loginDto.password, user.passwordHash);
+            const isMatch = await bcrypt.compare(loginDto.password, user.passwordHash)
             if (!isMatch) {
                 throw new BadRequestException('Password is incorrect')
             }
 
-            const payload = { id: user.id, role: user.role };
+            if(!user.isActive)
+            {
+                throw new BadRequestException('You Account has been Deactivated, please contact Admin')
+            }
+
+            const payload = { id: user.id, role: user.role }
             const accessToken = await this.jwtService.signAsync(payload);
 
             res.cookie('access_token', accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                sameSite: 'strict',
+                maxAge: 1 * 24 * 60 * 60 * 1000, 
             });
 
             return { message: 'Login successful' };
@@ -47,11 +52,11 @@ export class AuthService {
         }
     }
 
-    async GetCurrentUser(res: Response): Promise<{ id: string, role: UserRole } | null> {
+    async GetCurrentUser(req: Request): Promise<{ id: string, role: UserRole } | null> {
 
         try {
 
-            const token = res.req.cookies?.access_token;
+            const token = this.ExtractToken(req);
 
             if (!token) {
                 throw new UnauthorizedException('Please login first');
@@ -72,6 +77,18 @@ export class AuthService {
             }
             return null;
         }
+
+    }
+
+    ExtractToken(req: Request): string | undefined {
+
+        const tokenFromCookie = req.cookies?.access_token
+        if (tokenFromCookie) {
+            return tokenFromCookie
+        }
+
+        const [type, token] = req.headers.authorization?.split(' ') ?? [];
+        return type === 'Bearer' ? token : undefined;
 
     }
 }

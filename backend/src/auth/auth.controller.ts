@@ -1,7 +1,7 @@
-import { Controller, Post, Res, Body, HttpCode, HttpStatus, Get } from "@nestjs/common";
+import { Controller, Post, Res, Body, HttpCode, HttpStatus, Get, Req } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LoginDTO } from "./DTOs/login.dto";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import { UserRole } from "../entities/user.entity";
 
 
@@ -25,8 +25,8 @@ export class AuthController {
     }
 
     @Get('check-logged-in-user')
-    GetCurrentUser(@Res({passthrough: true}) res: Response): Promise<{ id: string, role: UserRole } | null>  {
-        return this.authService.GetCurrentUser(res);
+    GetCurrentUser(@Req() req: Request): Promise<{ id: string, role: UserRole } | null>  {
+        return this.authService.GetCurrentUser(req);
     }
 
 

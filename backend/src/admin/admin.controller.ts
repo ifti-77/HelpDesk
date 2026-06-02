@@ -1,4 +1,4 @@
-import {Body,Controller,Delete,Get,Param,Patch,Post,Put,Req,UseGuards,UsePipes,ValidationPipe,} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards, UsePipes, ValidationPipe, } from '@nestjs/common';
 import type { Request } from 'express';
 
 import { AdminService } from './admin.service';
@@ -6,7 +6,7 @@ import { AdminGuard } from './admin.guard';
 import { EmployeeUpdateDto } from '../employee/DTOs/employeeUpdate.dto';
 import { TicketCreateDto } from '../employee/DTOs/ticketCreate.dto';
 import { TicketPriority, TicketStatus } from '../entities/ticket.entity';
-import { UserRole } from '../entities/user.entity';
+import { UserEntity, UserRole } from '../entities/user.entity';
 import { CreateUserDto } from './DTOs/createUser.dto';
 
 interface AuthRequest extends Request {
@@ -15,8 +15,8 @@ interface AuthRequest extends Request {
 
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
-  
+  constructor(private readonly adminService: AdminService) { }
+
   @Get('profile')
   @UseGuards(AdminGuard)
   GetAdminProfile(@Req() request: AuthRequest) {
@@ -54,71 +54,89 @@ export class AdminController {
 
   @Get('users')
   @UseGuards(AdminGuard)
-  GetUsers(@Req() request: AuthRequest) {
+  GetUsers(@Req() request: AuthRequest):Promise<UserEntity[] | null> {
     return this.adminService.GetUsers(request.user.id);
   }
 
-  @Get('users/:userId')
+  @Get('users/:userEmail')
   @UseGuards(AdminGuard)
-  GetUser(
-    @Param('userId') userId: string,
+  GetUserByEmail(
+    @Param('userEmail') userEmail: string,
     @Req() request: AuthRequest,
-  ) {
-    return this.adminService.GetUser(request.user.id, userId);
+  ):Promise<UserEntity[] | null> 
+  {
+    return this.adminService.GetUserByEmail(request.user.id, userEmail);
   }
 
-  @Patch('users/:userId')
+  @Get('users/role/:role')
+  @UseGuards(AdminGuard)
+  GetUserByRole(
+    @Param('role') role: UserRole,
+    @Req() request: AuthRequest,
+  ):Promise<UserEntity[] | null> 
+  {
+    return this.adminService.GetUserByRole(role);
+  }
+
+  @Patch('users/resetpassword/:userId')
   @UseGuards(AdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  UpdateUser(
+  ResetUserPassword(
     @Param('userId') userId: string,
-    @Body() updatedUser: EmployeeUpdateDto,
+    @Body('password') resetPassword: string,
     @Req() request: AuthRequest,
   ) {
-    return this.adminService.UpdateUser(
+    return this.adminService.ResetUserPassword(
       request.user.id,
       userId,
-      updatedUser,
-    );
+      resetPassword,
+    )
   }
 
-  @Patch('users/:userId/role')
+  @Patch('users/role/:userId')
   @UseGuards(AdminGuard)
   UpdateUserRole(
     @Param('userId') userId: string,
     @Body('role') role: UserRole,
     @Req() request: AuthRequest,
-  ) {
+  ):Promise<UserEntity> {
     return this.adminService.UpdateUserRole(request.user.id, userId, role);
   }
 
-  @Patch('users/:userId/status')
+  @Patch('users/status/:userId')
   @UseGuards(AdminGuard)
-  UpdateUserStatus(
+  ActivateUserStatus(
     @Param('userId') userId: string,
-    @Body('isActive') isActive: boolean,
     @Req() request: AuthRequest,
-  ) {
-    return this.adminService.UpdateUserStatus(
+  ):Promise<UserEntity> {
+    return this.adminService.ActivateUserStatus(
       request.user.id,
       userId,
-      isActive,
-    );
+    )
   }
 
   @Delete('users/:userId')
   @UseGuards(AdminGuard)
-  DeleteUser(
+  DeactivateUser(
     @Param('userId') userId: string,
     @Req() request: AuthRequest,
-  ) {
-    return this.adminService.DeleteUser(request.user.id, userId);
+  ):Promise<boolean> {
+    return this.adminService.DeactivateUser(request.user.id, userId);
   }
 
   @Get('tickets')
   @UseGuards(AdminGuard)
   GetAllTickets(@Req() request: AuthRequest) {
-    return this.adminService.GetAllTickets(request.user.id);
+    return this.adminService.GetAllTickets();
+  }
+
+  @Get('tickets/status/:status')
+  @UseGuards(AdminGuard)
+  GetTicketsByStatus(
+    @Param('status') status: TicketStatus,
+    @Req() request: AuthRequest,
+  ) {
+    return this.adminService.GetTicketsByStatus(status);
   }
 
   @Get('tickets/:ticketId')
@@ -127,25 +145,11 @@ export class AdminController {
     @Param('ticketId') ticketId: string,
     @Req() request: AuthRequest,
   ) {
-    return this.adminService.GetTicket(request.user.id, ticketId);
+    return this.adminService.GetTicket( ticketId);
   }
 
-  @Patch('tickets/:ticketId')
-  @UseGuards(AdminGuard)
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  UpdateTicket(
-    @Param('ticketId') ticketId: string,
-    @Body() updatedTicket: TicketCreateDto,
-    @Req() request: AuthRequest,
-  ) {
-    return this.adminService.UpdateTicket(
-      request.user.id,
-      ticketId,
-      updatedTicket,
-    );
-  }
 
-  @Patch('tickets/:ticketId/status')
+  @Patch('tickets/status/:ticketId')
   @UseGuards(AdminGuard)
   UpdateTicketStatus(
     @Param('ticketId') ticketId: string,
@@ -153,13 +157,12 @@ export class AdminController {
     @Req() request: AuthRequest,
   ) {
     return this.adminService.UpdateTicketStatus(
-      request.user.id,
       ticketId,
       status,
     );
   }
 
-  @Patch('tickets/:ticketId/assign')
+  @Patch('tickets/assign/:ticketId')
   @UseGuards(AdminGuard)
   AssignTicket(
     @Param('ticketId') ticketId: string,
@@ -173,7 +176,7 @@ export class AdminController {
     );
   }
 
-  @Patch('tickets/:ticketId/priority')
+  @Patch('tickets/priority/:ticketId')
   @UseGuards(AdminGuard)
   UpdateTicketPriority(
     @Param('ticketId') ticketId: string,
@@ -181,7 +184,6 @@ export class AdminController {
     @Req() request: AuthRequest,
   ) {
     return this.adminService.UpdateTicketPriority(
-      request.user.id,
       ticketId,
       priority,
     );
@@ -193,10 +195,10 @@ export class AdminController {
     @Param('ticketId') ticketId: string,
     @Req() request: AuthRequest,
   ) {
-    return this.adminService.DeleteTicket(request.user.id, ticketId);
+    return this.adminService.DeleteTicket(ticketId);
   }
 
-  @Post('tickets/:ticketId/comments')
+  @Post('tickets/comments/:ticketId')
   @UseGuards(AdminGuard)
   CreateComment(
     @Param('ticketId') ticketId: string,
@@ -206,26 +208,36 @@ export class AdminController {
     return this.adminService.CreateComment(request.user.id, ticketId, comment);
   }
 
-  @Get('tickets/:ticketId/comments')
+  @Get('tickets/comments/:ticketId')
   @UseGuards(AdminGuard)
   GetComments(
     @Param('ticketId') ticketId: string,
     @Req() request: AuthRequest,
   ) {
-    return this.adminService.GetComments(request.user.id, ticketId);
+    return this.adminService.GetComments( ticketId);
   }
 
-  @Delete('tickets/:ticketId/comments/:commentId')
+  @Delete('tickets/comments/')
   @UseGuards(AdminGuard)
   DeleteComment(
-    @Param('ticketId') ticketId: string,
-    @Param('commentId') commentId: string,
+    @Query('ticketId') ticketId: string,
+    @Query('commentId') commentId: string,
     @Req() request: AuthRequest,
   ) {
     return this.adminService.DeleteComment(
-      request.user.id,
       ticketId,
       commentId,
     );
+  }
+
+  @Get('resource-counts')
+  @UseGuards(AdminGuard)
+  GetAllResourceCounts(@Req() request: AuthRequest): Promise<{
+    numberOfUser: number,
+    numberOfOpenTicket: number,
+    numberOfResolvedTicket: number,
+    numberOfTicket: number
+  }> {
+    return this.adminService.GetAllResourceCounts(request.user.id)
   }
 }
