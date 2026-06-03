@@ -142,7 +142,6 @@ export class EmployeeService {
     }
 
     async GetTickets(employeeId: string): Promise<TicketEntity[] | null> {
-        await this.getEmployeeById(employeeId);
 
         return this.ticketRepository.find({
             where: {
@@ -168,6 +167,28 @@ export class EmployeeService {
         return this.getOwnTicket(employeeId, ticketId);
     }
 
+    async GetTicketsByStatus(
+        employeeId: string,
+        status: TicketStatus,
+    ): Promise<TicketEntity[] | null> {
+        return this.ticketRepository.find({
+            where: {
+                createdBy: {
+                    id: employeeId,
+                },
+                status,
+            },
+            relations: {
+                createdBy: true,
+                assignedTo: true,
+                comments: true,
+            },
+            order: {
+                createdAt: 'DESC',
+            },
+        });
+    }
+
     async UpdateTicket(
         employeeId: string,
         ticketId: string,
@@ -179,23 +200,14 @@ export class EmployeeService {
             throw new BadRequestException('Only OPEN tickets can be updated');
         }
 
-        if ((updatedTicket as any).title !== undefined) {
-            ticket.title = (updatedTicket as any).title;
-        }
 
-        if ((updatedTicket as any).description !== undefined) {
-            ticket.description = (updatedTicket as any).description;
-        }
+            ticket.title = (updatedTicket as any).title
+            ticket.description = (updatedTicket as any).description
+            ticket.priority = (updatedTicket as any).priority
+            ticket.category = (updatedTicket as any).category
+        
 
-        if ((updatedTicket as any).priority !== undefined) {
-            ticket.priority = (updatedTicket as any).priority;
-        }
-
-        if ((updatedTicket as any).category !== undefined) {
-            ticket.category = (updatedTicket as any).category;
-        }
-
-        return this.ticketRepository.save(ticket);
+        return this.ticketRepository.save(ticket)
     }
 
     async DeleteTicket(employeeId: string, ticketId: string): Promise<boolean> {

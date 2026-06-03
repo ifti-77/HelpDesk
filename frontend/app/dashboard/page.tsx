@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import axios from "axios";
 import { redirect } from 'next/navigation'
 import AdminDashboard from "@/components/AdminDashboard";
+import EmployeeDashboard from "@/components/EmployeeDashboard";
 
 type VerifyUser = {
   id: string;
@@ -42,7 +43,7 @@ async function dashboard() {
     <div>
       {user?.role === UserRole.ADMIN && <AdminDashboard/>}
       {user?.role === UserRole.AGENT && <p>Welcome, Agent! You have access to the dashboard.</p>}
-      {user?.role === UserRole.EMPLOYEE && <p>Welcome, Employee! You have limited access to the dashboard.</p>}
+      {user?.role === UserRole.EMPLOYEE && <EmployeeDashboard/>}
     </div>
   )
 }

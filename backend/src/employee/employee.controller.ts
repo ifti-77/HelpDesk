@@ -3,7 +3,7 @@ import { EmployeeService } from "./employee.service";
 import { UserEntity } from "../entities/user.entity";
 import { EmployeeUpdateDto } from "./DTOs/employeeUpdate.dto";
 import { TicketCreateDto } from "./DTOs/ticketCreate.dto";
-import { TicketEntity } from "../entities/ticket.entity";
+import { TicketEntity, TicketStatus } from "../entities/ticket.entity";
 import { EmployeeGuard } from "./employee.guard";
 import type { Request } from "express";
 
@@ -58,6 +58,13 @@ export class EmployeeController {
     @UsePipes(new ValidationPipe({whitelist: true}))
     GetTicket(@Param('ticketId') ticketId: string, @Req() request: AuthRequest): Promise<TicketEntity | null> {
         return this.employeeService.GetTicket(request.user.id ,ticketId);
+    }
+
+    @Get("/tickets/status/:status")
+    @UseGuards(EmployeeGuard)
+    @UsePipes(new ValidationPipe({whitelist: true}))
+    GetTicketsByStatus(@Param('status') status: TicketStatus, @Req() request: AuthRequest): Promise<TicketEntity[] | null> {
+        return this.employeeService.GetTicketsByStatus(request.user.id ,status);
     }
 
     @Patch("/tickets/:ticketId")

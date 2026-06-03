@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation"
 import { Suspense, useEffect, useRef, useState } from "react"
 import z, { input } from "zod"
 import AdminTickets from "./AdminTickets"
+import UpdateProfile from "./UpdateProfile"
 
 function AdminDashboard() {
 
   const [admin, setAdmin] = useState<User>()
-  const [windowPanel, setWindowPanel] = useState<'dashboard' | 'createuser' | 'viewuser' | 'ticket'>('dashboard')
+  const [windowPanel, setWindowPanel] = useState<'dashboard' | 'createuser' | 'viewuser' | 'ticket' | 'update-profile'>('dashboard')
   const router = useRouter()
 
   useEffect(() => {
@@ -36,7 +37,6 @@ function AdminDashboard() {
   return (
     <main className="min-h-screen bg-slate-100 p-1.5">
       <div className="flex min-h-[calc(100vh-3rem)] overflow-hidden bg-white">
-        {/* Sidebar */}
         <aside className="w-64 border-r border-slate-200 bg-slate-950 p-6 text-white">
           <h1 className="mb-8 text-2xl font-bold">HelpDesk</h1>
 
@@ -59,8 +59,10 @@ function AdminDashboard() {
               Tickets
             </button>
 
-            <button className="w-full rounded-lg px-4 py-2 text-left text-slate-300 hover:bg-slate-800 hover:text-white">
-              Settings
+            <button className="w-full rounded-lg px-4 py-2 text-left text-slate-300 hover:bg-slate-800 hover:text-white"
+              onClick={() => setWindowPanel('update-profile')}
+            >
+              Update Profile
             </button>
           </nav>
         </aside>
@@ -83,6 +85,7 @@ function AdminDashboard() {
             {windowPanel === 'createuser' && <ManageUsers props="create" />}
             {windowPanel === 'viewuser' && <ManageUsers props="view" />}
             { windowPanel === 'ticket' && <AdminTickets  /> }
+            { windowPanel === 'update-profile' && <UpdateProfile user={admin} setUser={setAdmin} /> }
           </Suspense>
         </section>
 
@@ -93,7 +96,7 @@ function AdminDashboard() {
   )
 }
 
-function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dashboard' | 'createuser' | 'viewuser' | 'ticket') => void }) {
+function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dashboard' | 'createuser' | 'viewuser' | 'ticket' | 'update-profile') => void }) {
   const [resourceCount, setResourceCount] = useState<{
     numberOfUser: number,
     numberOfOpenTicket: number,
