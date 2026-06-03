@@ -152,7 +152,7 @@ export class EmployeeService {
             relations: {
                 createdBy: true,
                 assignedTo: true,
-                comments: true,
+                comments: {user: true},
             },
             order: {
                 createdAt: 'DESC',
@@ -181,7 +181,7 @@ export class EmployeeService {
             relations: {
                 createdBy: true,
                 assignedTo: true,
-                comments: true,
+                comments: {user: true},
             },
             order: {
                 createdAt: 'DESC',
@@ -210,6 +210,24 @@ export class EmployeeService {
         return this.ticketRepository.save(ticket)
     }
 
+    async UpdateTicketStatus(
+        employeeId: string,
+        ticketId: string,
+        status: TicketStatus,
+    ): Promise<TicketEntity | null> {
+        const ticket = await this.getOwnTicket(employeeId, ticketId);
+
+        if (ticket.status !== TicketStatus.RESOLVED) {
+            throw new BadRequestException('Only RESOLVED tickets can be updated');
+        }
+
+        ticket.status = status
+
+        const savedTicket = await this.ticketRepository.save(ticket)
+
+        return await this.getOwnTicket(employeeId, savedTicket.id)
+    }
+
     async DeleteTicket(employeeId: string, ticketId: string): Promise<boolean> {
         const ticket = await this.getOwnTicket(employeeId, ticketId);
 
@@ -226,7 +244,7 @@ export class EmployeeService {
         employeeId: string,
         ticketId: string,
         comment: string,
-    ): Promise<boolean> {
+    ): Promise<TicketCommentEntity | null> {
         if (!comment || comment.trim().length < 1) {
             throw new BadRequestException('Comment is required');
         }
@@ -244,9 +262,9 @@ export class EmployeeService {
             message: comment.trim(),
         });
 
-        await this.ticketCommentRepository.save(newComment);
+        const savedComment = await this.ticketCommentRepository.save(newComment);
 
-        return true;
+        return await this.ticketCommentRepository.findOne({where:{id:savedComment.id}, relations:{user:true}})
     }
 
     async GetComments(

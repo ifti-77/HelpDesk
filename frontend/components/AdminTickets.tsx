@@ -89,7 +89,8 @@ function AdminTickets() {
             </div>):(<div className="my-4 space-y-4 rounded-lg bg-slate-100 p-4"> <p>No {viewWindow} Ticket Available</p></div>)}
 
 
-            {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.ADMIN} 
+            {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.ADMIN}
+                setTickets={setTickets} 
             selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} 
             viewTicketDetails={viewTicketDetails} setViewTicketDetails={setViewTicketDetails} />)}
         </div>

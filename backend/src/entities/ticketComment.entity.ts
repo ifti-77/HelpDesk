@@ -7,7 +7,7 @@ export class TicketCommentEntity {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @ManyToOne(() => TicketEntity, ticket => ticket.comments)
+    @ManyToOne(() => TicketEntity, ticket => ticket.comments, { onDelete: 'CASCADE' })
     ticket!: TicketEntity;
 
     @ManyToOne(() => UserEntity, user => user.comments)

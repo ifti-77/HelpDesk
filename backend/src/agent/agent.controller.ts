@@ -71,7 +71,7 @@ export class AgentController {
         return this.agentService.GetTicket(request.user.id, ticketId);
     }
 
-    @Patch('tickets/:ticketId/status')
+    @Patch('tickets/status/:ticketId')
     @UseGuards(AgentGuard)
     @UsePipes(new ValidationPipe({ whitelist: true }))
     UpdateTicketStatus(
@@ -110,7 +110,7 @@ export class AgentController {
         );
     }
 
-    @Post('tickets/:ticketId/comments')
+    @Post('tickets/comments/:ticketId')
     @UseGuards(AgentGuard)
     CreateComment(
         @Param('ticketId') ticketId: string,
@@ -120,7 +120,7 @@ export class AgentController {
         return this.agentService.CreateComment(request.user.id, ticketId, comment);
     }
 
-    @Get('tickets/:ticketId/comments')
+    @Get('tickets/comments/:ticketId')
     @UseGuards(AgentGuard)
     GetComments(
         @Param('ticketId') ticketId: string,
@@ -129,7 +129,7 @@ export class AgentController {
         return this.agentService.GetComments(request.user.id, ticketId);
     }
 
-    @Delete('tickets/:ticketId/comments/:commentId')
+    @Delete('tickets/comments/:ticketId/:commentId')
     @UseGuards(AgentGuard)
     DeleteComment(
         @Param('ticketId') ticketId: string,

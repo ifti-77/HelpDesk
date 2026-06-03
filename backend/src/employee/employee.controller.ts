@@ -6,6 +6,7 @@ import { TicketCreateDto } from "./DTOs/ticketCreate.dto";
 import { TicketEntity, TicketStatus } from "../entities/ticket.entity";
 import { EmployeeGuard } from "./employee.guard";
 import type { Request } from "express";
+import { TicketCommentEntity } from "src/entities/ticketComment.entity";
 
 interface AuthRequest extends Request {
     user: { id: string };
@@ -74,6 +75,13 @@ export class EmployeeController {
         return this.employeeService.UpdateTicket(request.user.id ,ticketId, updatedTicket);
     }
 
+    @Patch("/tickets/status/:ticketId")
+    @UseGuards(EmployeeGuard)
+    @UsePipes(new ValidationPipe({whitelist: true}))
+    UpdateTicketStatus(@Param('ticketId') ticketId: string, @Body('status') status: TicketStatus, @Req() request: AuthRequest): Promise<TicketEntity | null> {
+        return this.employeeService.UpdateTicketStatus(request.user.id ,ticketId, status);
+    }
+
     @Delete("/tickets/:ticketId")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
@@ -81,14 +89,15 @@ export class EmployeeController {
         return this.employeeService.DeleteTicket(request.user.id ,ticketId);
     }
 
-    @Post("/tickets/:ticketId/comments")
+    @Post("/tickets/comments/:ticketId")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
-    CreateComment(@Param('ticketId') ticketId: string, @Body('comment') comment: string, @Req() request: AuthRequest): Promise<boolean> {
+    CreateComment(@Param('ticketId') ticketId: string, 
+    @Body('comment') comment: string, @Req() request: AuthRequest): Promise<TicketCommentEntity | null> {
         return this.employeeService.CreateComment(request.user.id ,ticketId, comment);
     }
 
-    @Get("/tickets/:ticketId/comments")
+    @Get("/tickets/comments/:ticketId")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     GetComments(@Param('ticketId') ticketId: string, @Req() request: AuthRequest): Promise<string[] | null> {
@@ -97,7 +106,7 @@ export class EmployeeController {
 
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({ whitelist: true }))
-    @Delete("/tickets/:ticketId/comments/:commentId")
+    @Delete("/tickets/comments/:ticketId/:commentId")
     DeleteComment(@Param('ticketId') ticketId: string, @Param('commentId') commentId: string,  @Req() request: AuthRequest): Promise<boolean> {
         return this.employeeService.DeleteComment(request.user.id ,ticketId, commentId);
     }

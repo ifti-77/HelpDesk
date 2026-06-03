@@ -7,9 +7,11 @@ import axios from 'axios'
 import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 
 const ViewTicketDetails = ({ userRole,
+    setTickets,
     selectedTicket, setSelectedTicket,
     viewTicketDetails, setViewTicketDetails }: {
         userRole: UserRole | null,
+        setTickets: React.Dispatch<React.SetStateAction<Ticket[] | null>>,
         selectedTicket: Ticket | null,
         setSelectedTicket: React.Dispatch<React.SetStateAction<Ticket | null>>,
         viewTicketDetails: boolean, setViewTicketDetails: React.Dispatch<React.SetStateAction<boolean>>
@@ -54,6 +56,210 @@ const ViewTicketDetails = ({ userRole,
         }
     }, [value])
 
+    const handlePostComment = async () => {
+        if (value.trim().length === 0) {
+            alert('Comment cannot be empty')
+            return
+        }
+        try {
+            let response
+
+            if (userRole === UserRole.ADMIN) {
+                response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/admin/tickets/comments/${selectedTicket?.id}`, {
+                    comment: value
+                }, {
+                    withCredentials: true
+                })
+            }
+            else if (userRole === UserRole.AGENT) {
+                response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/agent/tickets/comments/${selectedTicket?.id}`, {
+                    comment: value
+                }, {
+                    withCredentials: true
+                })
+            }
+            else if (userRole === UserRole.EMPLOYEE) {
+
+                response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/employee/tickets/comments/${selectedTicket?.id}`, {
+                    comment: value
+                }, {
+                    withCredentials: true
+                })
+            } else {
+                alert('Invalid user role')
+                return
+            }
+
+            if (response?.status === 201) {
+                alert('Comment posted successfully')
+                setValue("")
+                setSelectedTicket((prev) => {
+                    if (!prev) return prev
+                    const updatedComments = [...prev.comments, response.data]
+                    return { ...prev, comments: updatedComments }
+                })
+                setTickets((prev) => {
+                    if (!prev) return prev
+                    const updatedTickets = prev.map((ticket) => {
+                        if (ticket.id === selectedTicket?.id) {
+                            const updatedComments = [...ticket.comments, response.data]
+                            return { ...ticket, comments: updatedComments }
+                        }
+                        return ticket
+                    })
+                    return updatedTickets
+                })
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                alert(error.response.data?.message)
+            }
+        }
+    }
+
+    const DeleteTicket = async () => {
+        if(userRole !== UserRole.EMPLOYEE) {
+            alert('Only Employees can delete tickets')
+            return
+        }
+        if (selectedTicket?.status !== TicketStatus.OPEN) {
+            alert('Only OPEN tickets can be deleted')
+            return
+        }
+
+        const confirmDelete = confirm(`Delete '${selectedTicket?.title}' this ticket?`)
+        if (!confirmDelete) return
+
+        try {
+            const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/employee/tickets/${selectedTicket?.id}`, {
+                withCredentials: true
+            })
+            if (response.status === 200) {
+                alert('Ticket deleted successfully')
+                setViewTicketDetails(false)
+                setSelectedTicket(null)
+                setTickets((prev) => {
+                    if (!prev) return prev
+                    const updatedTickets = prev.filter((ticket) => ticket.id !== selectedTicket?.id)
+                    return updatedTickets
+                })
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                alert(error.response.data?.message)
+            }
+        }
+    }
+    const CloseTicket = async () => {
+
+        if(userRole !== UserRole.EMPLOYEE) {
+            alert('Only Employees can Close tickets')
+            return
+        }
+
+        if (selectedTicket?.status !== TicketStatus.RESOLVED) {
+            alert('Only RESOLVED tickets can be closed')
+            return
+        }
+
+        const confirmDelete = confirm(`Close '${selectedTicket?.title}' this ticket?`)
+        if (!confirmDelete) return
+
+        try {
+            const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/employee/tickets/status/${selectedTicket?.id}`, {
+                status: TicketStatus.CLOSED
+            }, {
+                withCredentials: true
+            })
+            if (response.status === 200) {
+                alert('Ticket closed successfully')
+                setViewTicketDetails(false)
+                setSelectedTicket(null)
+                setTickets((prev) => {
+                    if (!prev) return prev
+                    const updatedTickets = prev.filter((ticket) => ticket.id !== selectedTicket?.id)
+                    return updatedTickets
+                })
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                alert(error.response.data?.message)
+            }
+        }
+    }
+    const ResolveTicket = async () => {
+
+        if(userRole !== UserRole.AGENT) {
+            alert('Only Agents can resolve tickets')
+            return
+        }
+
+        if (selectedTicket?.status !== TicketStatus.IN_PROGRESS) {
+            alert('Only IN_PROGRESS tickets can be resolved')
+            return
+        }
+
+        const confirmDelete = confirm(`Resolve '${selectedTicket?.title}' this ticket?`)
+        if (!confirmDelete) return
+
+        try {
+            const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/agent/tickets/status/${selectedTicket?.id}`, {
+                status: TicketStatus.RESOLVED
+            }, {
+                withCredentials: true
+            })
+            if (response.status === 200) {
+                alert('Ticket resolved successfully')
+                setViewTicketDetails(false)
+                setSelectedTicket(null)
+                setTickets((prev) => {
+                    if (!prev) return prev
+                    const updatedTickets = prev.filter((ticket) => ticket.id !== selectedTicket?.id)
+                    return updatedTickets
+                })
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                alert(error.response.data?.message)
+            }
+        }
+    }
+    const RejectTicket = async () => {
+
+        if(userRole !== UserRole.AGENT) {
+            alert('Only Agents can reject tickets')
+            return
+        }
+
+        if (selectedTicket?.status !== TicketStatus.IN_PROGRESS) {
+            alert('Only IN_PROGRESS tickets can be rejected')
+            return
+        }
+
+        const confirmDelete = confirm(`Reject '${selectedTicket?.title}' this ticket?`)
+        if (!confirmDelete) return
+
+        try {
+            const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/agent/tickets/${selectedTicket?.id}`, {
+                withCredentials: true
+            })
+            if (response.status === 200) {
+                alert('Ticket rejected successfully')
+                setViewTicketDetails(false)
+                setSelectedTicket(null)
+                setTickets((prev) => {
+                    if (!prev) return prev
+                    const updatedTickets = prev.filter((ticket) => ticket.id !== selectedTicket?.id)
+                    return updatedTickets
+                })
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                alert(error.response.data?.message)
+            }
+        }
+    }
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
             <div className="w-full max-w-[90%] rounded-2xl bg-white p-6 shadow-2xl">
@@ -79,7 +285,7 @@ const ViewTicketDetails = ({ userRole,
                             <select className='border-2 border-slate-500 outline-slate-700'>
                                 <option value="" selected hidden>Assign to Agent</option>
                                 {assignAbleAgents ? (
-                                    assignAbleAgents.map((agents, index) => (<option key={index}>{agents.name}-{agents.email}</option>))
+                                    assignAbleAgents.map((agents, index) => agents.id !== selectedTicket?.assignedTo?.id && (<option key={index}>{agents.name}-{agents.email}</option>))
                                 ) : (<option disabled>No Agent availabe</option>)}
                             </select>
                             <button className='bg-green-300 hover:bg-green-500 px-4 py-1.5 m-2 rounded-md text-white'>Assign</button>
@@ -118,12 +324,15 @@ const ViewTicketDetails = ({ userRole,
 
                                 </textarea>
                                 <button className='block bg-transparent border-b rounded-md px-3 py-1 hover:text-blue-700 border-b-blue-500 hover:border-2
-                                         hover:border-blue-600 transition-all delay-25 duration-50 ease-in-out cursor-pointer'>Post Comment</button>
+                                         hover:border-blue-600 transition-all delay-25 duration-50 ease-in-out cursor-pointer'
+                                    onClick={handlePostComment}>
+                                    Post Comment
+                                </button>
                             </div>
                         )}
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-3">
+                    <div className="flex justify-between gap-3 pt-3 w-full">
                         <button
                             type="button"
                             className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -134,7 +343,45 @@ const ViewTicketDetails = ({ userRole,
                         >
                             Close
                         </button>
+                        <div className="flex gap-2">
 
+                            {userRole === UserRole.EMPLOYEE && selectedTicket?.status === TicketStatus.OPEN && (
+                                <button
+                                    type="button"
+                                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                                    onClick={() => DeleteTicket()}
+                                >
+                                    Delete Ticket
+                                </button>)}
+
+                            {userRole === UserRole.EMPLOYEE && selectedTicket?.status === TicketStatus.RESOLVED && (
+                                <button
+                                    type="button"
+                                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                                    onClick={() => CloseTicket()}
+                                >
+                                    Close Ticket
+                                </button>)}
+
+                            {userRole === UserRole.AGENT && selectedTicket?.status === TicketStatus.IN_PROGRESS && (
+                                <button
+                                    type="button"
+                                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                                    onClick={() => ResolveTicket()}
+                                >
+                                    Resolve Ticket
+                                </button>)}
+
+                            {userRole === UserRole.AGENT && selectedTicket?.status === TicketStatus.IN_PROGRESS && (
+                                <button
+                                    type="button"
+                                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                                    onClick={() => RejectTicket()}
+                                >
+                                    Reject Ticket
+                                </button>)}
+
+                        </div>
                     </div>
                 </div>
             </div>

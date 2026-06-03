@@ -4,8 +4,9 @@ import { Ticket, TicketStatus } from '@/CustomTypes/TicketType'
 import { UserRole } from '@/CustomTypes/UserType'
 import axios from 'axios'
 import ViewTicketDetails from './ViewTicketDetails'
+import CreateTicket from './CreateTicket'
 function EmployeeTickets() {
-    const [viewWindow, setViewWindow] = React.useState< 'create-tickets' | 'view-tickets' | TicketStatus.CLOSED>('create-tickets')
+    const [viewWindow, setViewWindow] = React.useState<'create-tickets' | 'view-tickets' | TicketStatus.CLOSED>('create-tickets')
     const [tickets, setTickets] = React.useState<Ticket[] | null>([{
         id: '1', title: 'Sample Ticket',
         priority: 'MEDIUM' as any,
@@ -28,13 +29,13 @@ function EmployeeTickets() {
     const FetchSelfTickets = async (viewWindow: 'view-tickets' | TicketStatus.CLOSED) => {
         try {
             let response
-            if(viewWindow === TicketStatus.CLOSED) {
-                 response = await axios.get<Ticket[] | null>(`${process.env.NEXT_PUBLIC_API_URL}/employee/tickets/status/${viewWindow}`, {
+            if (viewWindow === TicketStatus.CLOSED) {
+                response = await axios.get<Ticket[] | null>(`${process.env.NEXT_PUBLIC_API_URL}/employee/tickets/status/${viewWindow}`, {
                     withCredentials: true
                 })
-                
+
             } else {
-                 response = await axios.get<Ticket[] | null>(`${process.env.NEXT_PUBLIC_API_URL}/employee/tickets`, {
+                response = await axios.get<Ticket[] | null>(`${process.env.NEXT_PUBLIC_API_URL}/employee/tickets`, {
                     withCredentials: true
                 })
             }
@@ -42,8 +43,7 @@ function EmployeeTickets() {
             if (response && response.status === 200) {
                 const data = await response.data
                 setTickets(data)
-            }else
-            {
+            } else {
                 throw new Error('Failed to fetch tickets')
             }
         }
@@ -56,7 +56,7 @@ function EmployeeTickets() {
     }
 
     useEffect(() => {
-        if(viewWindow !== 'create-tickets') {
+        if (viewWindow !== 'create-tickets') {
             FetchSelfTickets(viewWindow)
         }
     }, [viewWindow === TicketStatus.CLOSED, viewWindow === 'view-tickets'])
@@ -83,24 +83,34 @@ function EmployeeTickets() {
                     Closed Tickets
                 </button>
             </div>
-            {Array.isArray(tickets) && tickets.length > 0 ? (<div className="my-4 space-y-4 flex-1 rounded-lg bg-slate-100 p-4">
-                {tickets?.map((ticket) => (
-                    <div key={ticket.id}>
-                        <h2>{ticket.title}</h2>
-                        <p><span>{ticket.priority}</span></p>
-                        <p>{ticket.description}</p>
-                        <button onClick={() => {
-                            setSelectedTicket(ticket);
-                            setViewTicketDetails(true);
-                        }} className="text-blue-600 hover:underline">
-                            View Details
-                        </button>
+            <div>
+                {viewWindow === 'create-tickets' ? (
+                    <div className="my-4 space-y-4 flex-1 rounded-lg bg-slate-100 p-4">
+                        <CreateTicket />
                     </div>
-                ))}
-            </div>) : (<div className="my-4 space-y-4 rounded-lg bg-slate-100 p-4"> <p>No {viewWindow} Ticket Available</p></div>)}
-
+                ) : (
+                    <div>
+                        {Array.isArray(tickets) && tickets.length > 0 ? (
+                            <div className="my-4 space-y-4 flex-1 rounded-lg bg-slate-100 p-4">
+                                {tickets?.map((ticket) => (
+                            <div key={ticket.id}>
+                                <h2>{ticket.title}</h2>
+                                <p><span>{ticket.priority}</span></p>
+                                <p>{ticket.description}</p>
+                                <button onClick={() => {
+                                    setSelectedTicket(ticket);
+                                    setViewTicketDetails(true);
+                                }} className="text-blue-600 hover:underline">
+                                    View Details
+                                </button>
+                            </div>
+                        ))}
+                    </div>) : (<div className="my-4 space-y-4 rounded-lg bg-slate-100 p-4"> <p>No {viewWindow} Ticket Available</p></div>)}
+                </div>)}
+            </div>
 
             {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.EMPLOYEE}
+                setTickets={setTickets}
                 selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket}
                 viewTicketDetails={viewTicketDetails} setViewTicketDetails={setViewTicketDetails} />)}
         </div>
