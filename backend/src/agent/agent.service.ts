@@ -12,7 +12,6 @@ import { Repository } from 'typeorm';
 import { UserEntity, UserRole } from '../entities/user.entity';
 import {
   TicketEntity,
-  TicketPriority,
   TicketStatus,
 } from '../entities/ticket.entity';
 import { TicketCommentEntity } from '../entities/ticketComment.entity';
@@ -30,7 +29,7 @@ export class AgentService {
 
     @InjectRepository(TicketCommentEntity)
     private readonly ticketCommentRepository: Repository<TicketCommentEntity>,
-  ) {}
+  ) { }
 
   private async getAgentById(agentId: string): Promise<UserEntity> {
     const agent = await this.userRepository.findOne({
@@ -134,34 +133,20 @@ export class AgentService {
     return savedAgent;
   }
 
-  async GetAllTickets(agentId: string): Promise<TicketEntity[] | null> {
-    await this.getAgentById(agentId);
 
-    return this.ticketRepository.find({
-      relations: {
-        createdBy: true,
-        assignedTo: true,
-        comments: true,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-    });
-  }
-
-  async GetAssignedTickets(agentId: string): Promise<TicketEntity[] | null> {
-    await this.getAgentById(agentId);
+  async GetTicketsByStatus(agentId: string, status: TicketStatus): Promise<TicketEntity[] | null> {
 
     return this.ticketRepository.find({
       where: {
         assignedTo: {
           id: agentId,
         },
+        status,
       },
       relations: {
         createdBy: true,
         assignedTo: true,
-        comments: true,
+        comments: { user: true },
       },
       order: {
         createdAt: 'DESC',
@@ -169,23 +154,6 @@ export class AgentService {
     });
   }
 
-  async GetUnassignedTickets(agentId: string): Promise<TicketEntity[] | null> {
-    await this.getAgentById(agentId);
-
-    return this.ticketRepository.find({
-      where: {
-        assignedTo: undefined,
-      },
-      relations: {
-        createdBy: true,
-        assignedTo: true,
-        comments: true,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-    });
-  }
 
   async GetTicket(
     agentId: string,
@@ -197,20 +165,19 @@ export class AgentService {
   }
 
   async UpdateTicketStatus(
-    agentId: string,
     ticketId: string,
     status: TicketStatus,
   ): Promise<TicketEntity | null> {
-    await this.getAgentById(agentId);
 
-    if (!Object.values(TicketStatus).includes(status)) {
-      throw new BadRequestException('Invalid ticket status');
+    if (status !== TicketStatus.RESOLVED && status !== TicketStatus.REJECTED) {
+      throw new BadRequestException('Agents can only change status to RESOLVED or REJECTED')
     }
+
 
     const ticket = await this.getTicketById(ticketId);
 
-    if (ticket.status === TicketStatus.CLOSED) {
-      throw new BadRequestException('Closed ticket status cannot be changed');
+    if (ticket.status !== TicketStatus.IN_PROGRESS) {
+      throw new BadRequestException('ticket is not in progress status');
     }
 
     ticket.status = status;
@@ -219,105 +186,67 @@ export class AgentService {
       ticket.resolvedAt = new Date();
     }
 
-    if (status === TicketStatus.CLOSED) {
-      ticket.closedAt = new Date();
-    }
+    const savedTicket = await this.ticketRepository.save(ticket);
 
-    return this.ticketRepository.save(ticket);
+    return await this.ticketRepository.findOne({
+      where: { id: savedTicket.id }, relations: {
+        comments: { user: true }, createdBy: true, assignedTo: true
+      }
+    })
+
   }
 
-  async AssignTicketToMe(
-    agentId: string,
-    ticketId: string,
-  ): Promise<TicketEntity | null> {
-    const agent = await this.getAgentById(agentId);
 
-    const ticket = await this.getTicketById(ticketId);
 
-    if (ticket.status === TicketStatus.CLOSED) {
-      throw new BadRequestException('Closed ticket cannot be assigned');
-    }
 
-    ticket.assignedTo = agent;
-
-    if (ticket.status === TicketStatus.OPEN) {
-      ticket.status = TicketStatus.IN_PROGRESS;
-    }
-
-    return this.ticketRepository.save(ticket);
-  }
-
-  async UpdateTicketPriority(
-    agentId: string,
-    ticketId: string,
-    priority: TicketPriority,
-  ): Promise<TicketEntity | null> {
-    await this.getAgentById(agentId);
-
-    if (!Object.values(TicketPriority).includes(priority)) {
-      throw new BadRequestException('Invalid ticket priority');
-    }
-
-    const ticket = await this.getTicketById(ticketId);
-
-    if (ticket.status === TicketStatus.CLOSED) {
-      throw new BadRequestException('Closed ticket priority cannot be changed');
-    }
-
-    ticket.priority = priority;
-
-    return this.ticketRepository.save(ticket);
-  }
 
   async CreateComment(
     agentId: string,
     ticketId: string,
     comment: string,
-  ): Promise<boolean> {
+  ): Promise<TicketCommentEntity | null> {
     if (!comment || comment.trim().length < 1) {
       throw new BadRequestException('Comment is required');
     }
 
     const agent = await this.getAgentById(agentId);
-    const ticket = await this.getTicketById(ticketId);
 
-    if (ticket.status === TicketStatus.CLOSED) {
-      throw new BadRequestException('Cannot comment on a closed ticket');
-    }
+    const ticket = await this.getTicketById(ticketId);
 
     const newComment = this.ticketCommentRepository.create({
       ticket,
       user: agent,
       message: comment.trim(),
-    });
+    })
 
-    await this.ticketCommentRepository.save(newComment);
+    const savedComment = await this.ticketCommentRepository.save(newComment)
 
-    return true;
+    return await this.ticketCommentRepository.findOne({ where: { id: savedComment.id }, relations: { user: true } })
   }
 
-  async GetComments(
-    agentId: string,
-    ticketId: string,
-  ): Promise<TicketCommentEntity[] | null> {
-    await this.getAgentById(agentId);
-
-    await this.getTicketById(ticketId);
-
-    return this.ticketCommentRepository.find({
+  async EditComment(agentId: string, ticketId: string, commentId: string, newComment: string): Promise<TicketCommentEntity | null> {
+    if (newComment || newComment.trim().length < 1) {
+      throw new BadRequestException('Comment cannot be empty')
+    }
+    const comment = await this.ticketCommentRepository.findOne({
       where: {
-        ticket: {
-          id: ticketId,
-        },
+        id: commentId,
+        ticket: { id: ticketId },
+        user: { id: agentId }
       },
       relations: {
-        user: true,
-        ticket: true,
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
+        user: true
+      }
+    })
+
+    if (!Comment) {
+      throw new BadRequestException("Comment not found or you don't have permission to edit this comment")
+    }
+
+    comment.message = newComment.trim()
+    const savedComment = await this.ticketCommentRepository.save(comment)
+
+    return await this.ticketCommentRepository.findOne({ where: { id: savedComment.id }, relations: { user: true } })
   }
 
   async DeleteComment(

@@ -4,6 +4,7 @@ import axios from "axios";
 import { redirect } from 'next/navigation'
 import AdminDashboard from "@/components/AdminDashboard";
 import EmployeeDashboard from "@/components/EmployeeDashboard";
+import AgentDashboard from "@/components/AgentDashboard";
 
 type VerifyUser = {
   id: string;
@@ -53,7 +54,7 @@ async function dashboard() {
   return (
     <div>
       {user?.role === UserRole.ADMIN && <AdminDashboard/>}
-      {user?.role === UserRole.AGENT && <p>Welcome, Agent! You have access to the dashboard.</p>}
+      {user?.role === UserRole.AGENT && <AgentDashboard />}
       {user?.role === UserRole.EMPLOYEE && <EmployeeDashboard/>}
     </div>
   )

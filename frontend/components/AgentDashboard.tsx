@@ -4,26 +4,27 @@ import { Suspense, useState, useEffect } from 'react'
 import { User } from '@/CustomTypes/UserType'
 import { useRouter } from 'next/navigation'
 import UpdateProfile from './UpdateProfile'
-import EmployeeTickets from './EmployeeTickets'
+import AgentTickets from './AgentTickets'
 import Logout from './Logout'
 
 
-function EmployeeDashboard() {
 
-    const [employee, setEmployee] = useState<User>()
+function AgentDashboard() {
+
+    const [agent, setAgent] = useState<User>()
   const [windowPanel, setWindowPanel] = useState<'dashboard' | 'ticket' | 'update-profile'>('dashboard')
   const router = useRouter()
 
   useEffect(() => {
-    async function fetchEmployeeProfile() {
+    async function fetchAgentProfile() {
 
       try {
-        const response = await axios.get<User>(`${process.env.NEXT_PUBLIC_API_URL}/employee/profile/`, {
+        const response = await axios.get<User>(`${process.env.NEXT_PUBLIC_API_URL}/agent/profile/`, {
           withCredentials: true
         })
         if (response.status == 200) {
           const data = await response.data
-          setEmployee(data)
+          setAgent(data)
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
@@ -31,7 +32,7 @@ function EmployeeDashboard() {
         }
       }
     }
-    fetchEmployeeProfile()
+    fetchAgentProfile()
   }, [])
 
   return (
@@ -64,21 +65,21 @@ function EmployeeDashboard() {
         <section className="flex-1 p-8">
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-500">Employee Panel</p>
+              <p className="text-sm font-medium text-slate-500">Agent Panel</p>
               <h2 className="text-3xl font-bold text-slate-900">
-                Welcome, <span className="text-blue-600">{employee?.name}</span>
+                Welcome, <span className="text-blue-600">{agent?.name}</span>
               </h2>
             </div>
 
             <div className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
-              {employee?.role}
+              {agent?.role}
             </div>
           </div>
           <Suspense fallback={<p>Loading dashboard...</p>}>
 
             {/* {windowPanel === 'dashboard' && <DashBoardComponent setWindowPanel={setWindowPanel} />} */}
-            { windowPanel === 'ticket' && <EmployeeTickets  /> }
-            { windowPanel === 'update-profile' && <UpdateProfile user={employee} setUser={setEmployee} /> }
+            { windowPanel === 'ticket' && <AgentTickets  /> }
+            { windowPanel === 'update-profile' && <UpdateProfile user={agent} setUser={setAgent} /> }
           </Suspense>
         </section>
 
@@ -90,4 +91,4 @@ function EmployeeDashboard() {
   )
 }
 
-export default EmployeeDashboard
+export default AgentDashboard

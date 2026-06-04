@@ -149,18 +149,7 @@ export class AdminController {
   }
 
 
-  @Patch('tickets/status/:ticketId')
-  @UseGuards(AdminGuard)
-  UpdateTicketStatus(
-    @Param('ticketId') ticketId: string,
-    @Body('status') status: TicketStatus,
-    @Req() request: AuthRequest,
-  ) {
-    return this.adminService.UpdateTicketStatus(
-      ticketId,
-      status,
-    );
-  }
+
 
   @Patch('tickets/assign/:ticketId')
   @UseGuards(AdminGuard)
@@ -176,27 +165,9 @@ export class AdminController {
     );
   }
 
-  @Patch('tickets/priority/:ticketId')
-  @UseGuards(AdminGuard)
-  UpdateTicketPriority(
-    @Param('ticketId') ticketId: string,
-    @Body('priority') priority: TicketPriority,
-    @Req() request: AuthRequest,
-  ) {
-    return this.adminService.UpdateTicketPriority(
-      ticketId,
-      priority,
-    );
-  }
 
-  @Delete('tickets/:ticketId')
-  @UseGuards(AdminGuard)
-  DeleteTicket(
-    @Param('ticketId') ticketId: string,
-    @Req() request: AuthRequest,
-  ) {
-    return this.adminService.DeleteTicket(ticketId);
-  }
+
+ 
 
   @Post('tickets/comments/:ticketId')
   @UseGuards(AdminGuard)
@@ -208,13 +179,15 @@ export class AdminController {
     return this.adminService.CreateComment(request.user.id, ticketId, comment);
   }
 
-  @Get('tickets/comments/:ticketId')
+  @Patch('tickets/comments/:ticketId/:commentId')
   @UseGuards(AdminGuard)
-  GetComments(
+  EditComment(
     @Param('ticketId') ticketId: string,
+    @Param('commentId') commentId: string,
+    @Body('comment') newComment: string,
     @Req() request: AuthRequest,
   ) {
-    return this.adminService.GetComments( ticketId);
+    return this.adminService.EditComment(request.user.id, ticketId, commentId, newComment);
   }
 
   @Delete('tickets/comments/')

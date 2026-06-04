@@ -20,8 +20,8 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @Post('logout')
     Logout(@Res({passthrough: true}) res: Response) {
-        res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'strict' });
-        return { message: 'Logged out successfully' };
+        res.clearCookie('access_token', { httpOnly: true, secure: true, sameSite: 'strict' });
+        return { message: 'Logged out successfully' }
     }
 
     @Get('check-logged-in-user')

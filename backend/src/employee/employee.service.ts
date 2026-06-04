@@ -1,9 +1,9 @@
-import {BadRequestException,Injectable,NotFoundException,UnauthorizedException} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { UserEntity, UserRole } from '../entities/user.entity';
-import {TicketEntity,TicketStatus} from '../entities/ticket.entity';
+import { TicketEntity, TicketStatus } from '../entities/ticket.entity';
 import { TicketCommentEntity } from '../entities/ticketComment.entity';
 import { EmployeeUpdateDto } from './DTOs/employeeUpdate.dto';
 import { TicketCreateDto } from './DTOs/ticketCreate.dto';
@@ -81,22 +81,20 @@ export class EmployeeService {
     async UpdateEmployeeProfile(employeeId: string, updatedEmployee: EmployeeUpdateDto): Promise<UserEntity | null> {
         const employee = await this.getEmployeeById(employeeId);
 
-        if(!employee)
-        {
+        if (!employee) {
             throw new NotFoundException('Employee not found');
         }
 
         employee.name = updatedEmployee.name;
 
-        const checkingExistingEmail = await this.userRepository.findOne({where:{email: updatedEmployee.email}});
+        const checkingExistingEmail = await this.userRepository.findOne({ where: { email: updatedEmployee.email } });
 
-        if(checkingExistingEmail && checkingExistingEmail.id !== employeeId)
-        {
+        if (checkingExistingEmail && checkingExistingEmail.id !== employeeId) {
             throw new BadRequestException('Email already in use');
         }
-        
+
         employee.email = updatedEmployee.email;
-        
+
 
         const savedEmployee = await this.userRepository.save(employee);
 
@@ -109,7 +107,7 @@ export class EmployeeService {
         employeeId: string,
         updatepassword: string,
     ): Promise<UserEntity | null> {
-        
+
         if (!updatepassword || updatepassword.length < 6) {
             throw new BadRequestException('Password must be at least 6 characters');
         }
@@ -141,18 +139,19 @@ export class EmployeeService {
         return this.ticketRepository.save(ticket);
     }
 
-    async GetTickets(employeeId: string): Promise<TicketEntity[] | null> {
+    async GetOwnTickets(employeeId: string): Promise<TicketEntity[] | null> {
 
         return this.ticketRepository.find({
             where: {
                 createdBy: {
                     id: employeeId,
                 },
+                status: Not(TicketStatus.CLOSED)
             },
             relations: {
                 createdBy: true,
                 assignedTo: true,
-                comments: {user: true},
+                comments: { user: true },
             },
             order: {
                 createdAt: 'DESC',
@@ -181,7 +180,7 @@ export class EmployeeService {
             relations: {
                 createdBy: true,
                 assignedTo: true,
-                comments: {user: true},
+                comments: { user: true },
             },
             order: {
                 createdAt: 'DESC',
@@ -201,13 +200,15 @@ export class EmployeeService {
         }
 
 
-            ticket.title = (updatedTicket as any).title
-            ticket.description = (updatedTicket as any).description
-            ticket.priority = (updatedTicket as any).priority
-            ticket.category = (updatedTicket as any).category
-        
+        ticket.title = (updatedTicket as any).title
+        ticket.description = (updatedTicket as any).description
+        ticket.priority = (updatedTicket as any).priority
+        ticket.category = (updatedTicket as any).category
 
-        return this.ticketRepository.save(ticket)
+
+        const savedTicket = await this.ticketRepository.save(ticket)
+
+        return await this.getOwnTicket(employeeId, savedTicket.id)
     }
 
     async UpdateTicketStatus(
@@ -264,30 +265,32 @@ export class EmployeeService {
 
         const savedComment = await this.ticketCommentRepository.save(newComment);
 
-        return await this.ticketCommentRepository.findOne({where:{id:savedComment.id}, relations:{user:true}})
+        return await this.ticketCommentRepository.findOne({ where: { id: savedComment.id }, relations: { user: true } })
     }
 
-    async GetComments(
-        employeeId: string,
-        ticketId: string,
-    ): Promise<string[] | null> {
-        await this.getOwnTicket(employeeId, ticketId);
-
-        const comments = await this.ticketCommentRepository.find({
+    async EditComment(employeeId: string, ticketId: string, commentId: string, newComment: string): Promise<TicketCommentEntity | null> {
+        if (newComment || newComment.trim().length < 1) {
+            throw new BadRequestException('Comment cannot be empty')
+        }
+        const comment = await this.ticketCommentRepository.findOne({
             where: {
-                ticket: {
-                    id: ticketId,
-                },
+                id: commentId,
+                ticket: { id: ticketId },
+                user: { id: employeeId }
             },
             relations: {
-                user: true,
-            },
-            order: {
-                createdAt: 'ASC',
-            },
-        });
+                user: true
+            }
+        })
 
-        return comments.map((comment) => comment.message);
+        if (!Comment) {
+            throw new BadRequestException("Comment not found or you don't have permission to edit this comment")
+        }
+
+        comment.message = newComment.trim()
+        const savedComment = await this.ticketCommentRepository.save(comment)
+
+        return await this.ticketCommentRepository.findOne({ where: { id: savedComment.id }, relations: { user: true } })
     }
 
     async DeleteComment(

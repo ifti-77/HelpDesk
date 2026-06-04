@@ -44,22 +44,12 @@ export class AgentController {
         );
     }
 
-    @Get('tickets')
-    @UseGuards(AgentGuard)
-    GetAllTickets(@Req() request: AuthRequest) {
-        return this.agentService.GetAllTickets(request.user.id);
-    }
 
-    @Get('tickets/assigned-to-me')
-    @UseGuards(AgentGuard)
-    GetAssignedTickets(@Req() request: AuthRequest) {
-        return this.agentService.GetAssignedTickets(request.user.id);
-    }
 
-    @Get('tickets/unassigned')
+    @Get('tickets/status/:status')
     @UseGuards(AgentGuard)
-    GetUnassignedTickets(@Req() request: AuthRequest) {
-        return this.agentService.GetUnassignedTickets(request.user.id);
+    GetTicketsByStatus(@Req() request: AuthRequest, @Param('status') status: TicketStatus) {
+        return this.agentService.GetTicketsByStatus(request.user.id, status);
     }
 
     @Get('tickets/:ticketId')
@@ -80,35 +70,12 @@ export class AgentController {
         @Req() request: AuthRequest,
     ) {
         return this.agentService.UpdateTicketStatus(
-            request.user.id,
             ticketId,
             status,
         );
     }
 
-    @Patch('tickets/:ticketId/assign-to-me')
-    @UseGuards(AgentGuard)
-    AssignTicketToMe(
-        @Param('ticketId') ticketId: string,
-        @Req() request: AuthRequest,
-    ) {
-        return this.agentService.AssignTicketToMe(request.user.id, ticketId);
-    }
 
-    @Patch('tickets/:ticketId/priority')
-    @UseGuards(AgentGuard)
-    @UsePipes(new ValidationPipe({ whitelist: true }))
-    UpdateTicketPriority(
-        @Param('ticketId') ticketId: string,
-        @Body('priority') priority: TicketPriority,
-        @Req() request: AuthRequest,
-    ) {
-        return this.agentService.UpdateTicketPriority(
-            request.user.id,
-            ticketId,
-            priority,
-        );
-    }
 
     @Post('tickets/comments/:ticketId')
     @UseGuards(AgentGuard)
@@ -120,14 +87,16 @@ export class AgentController {
         return this.agentService.CreateComment(request.user.id, ticketId, comment);
     }
 
-    @Get('tickets/comments/:ticketId')
-    @UseGuards(AgentGuard)
-    GetComments(
-        @Param('ticketId') ticketId: string,
-        @Req() request: AuthRequest,
-    ) {
-        return this.agentService.GetComments(request.user.id, ticketId);
-    }
+  @Patch('tickets/comments/:ticketId/:commentId')
+  @UseGuards(AgentGuard)
+  EditComment(
+    @Param('ticketId') ticketId: string,
+    @Param('commentId') commentId: string,
+    @Body('comment') newComment: string,
+    @Req() request: AuthRequest,
+  ) {
+    return this.agentService.EditComment(request.user.id, ticketId, commentId, newComment);
+  }
 
     @Delete('tickets/comments/:ticketId/:commentId')
     @UseGuards(AgentGuard)

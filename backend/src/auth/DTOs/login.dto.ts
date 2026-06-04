@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, Matches } from 'class-validator'
+import { IsEmail, IsNotEmpty, Matches, MinLength } from 'class-validator'
 
 export class LoginDTO {
     
@@ -7,6 +7,6 @@ export class LoginDTO {
     email!: string;
 
     @IsNotEmpty()
-    @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/, { message: 'Password must be at least 6 characters long and contain at least one letter and one number' })
+    @MinLength(6, { message: 'Password must be at least 6 characters long' })
     password!: string;
 }

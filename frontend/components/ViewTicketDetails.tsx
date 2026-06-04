@@ -18,12 +18,15 @@ const ViewTicketDetails = ({ userRole,
     }) => {
 
     const [assignAbleAgents, setAssignAbleAgents] = useState<User[] | null>(null)
+    const [selectedAgent, setSelectedAgent] = useState<string>("Assign To Agent")
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const [value, setValue] = useState("")
 
     useEffect(() => {
-        if (userRole === UserRole.ADMIN && selectedTicket?.status === TicketStatus.OPEN) {
+        if (userRole === UserRole.ADMIN &&
+            (selectedTicket?.status === TicketStatus.OPEN ||
+                selectedTicket?.status === TicketStatus.REJECTED)) {
             const fetchAssignAbleAgents = async () => {
                 try {
 
@@ -35,8 +38,6 @@ const ViewTicketDetails = ({ userRole,
                     if (response.status === 200) {
                         const data = await response.data
                         setAssignAbleAgents(data)
-                        console.log(assignAbleAgents)
-                        console.log(data)
                     }
                 }
                 catch (error) {
@@ -55,6 +56,47 @@ const ViewTicketDetails = ({ userRole,
             textareaRef.current.style.height = textareaRef.current?.scrollHeight + "px"
         }
     }, [value])
+
+    const handleAssignAgent = async (agentId: string) => {
+        if (userRole !== UserRole.ADMIN) {
+            alert('Only Admins can assign agents')
+            return
+        }
+        if (!agentId || agentId === "Assign To Agent") {
+            alert('Please select an agent to assign')
+            return
+        }
+
+        if (selectedTicket?.status !== TicketStatus.OPEN && selectedTicket?.status !== TicketStatus.REJECTED) {
+            alert('Only OPEN or REJECTED tickets can be assigned')
+            return
+        }
+        if (confirm(`Assign '${assignAbleAgents?.find((a) => a.id === agentId)?.name}' to this ticket?`) === false) return
+
+        try {
+            const response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/admin/tickets/assign/${selectedTicket?.id}`, {
+                assignedToId: agentId
+            }, {
+                withCredentials: true
+            })
+            if (response.status === 200) {
+                const data = await response.data
+                alert('Agent assigned successfully')
+                if (data !== null) {
+                    setSelectedTicket(data)
+                    setTickets((prev) => {
+                        if (!prev) return prev
+                        const updatedTickets = prev.filter((ticket) => ticket.id !== data?.id)
+                        return updatedTickets
+                    })
+                }
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                alert(error.response.data?.message)
+            }
+        }
+    }
 
     const handlePostComment = async () => {
         if (value.trim().length === 0) {
@@ -118,7 +160,7 @@ const ViewTicketDetails = ({ userRole,
     }
 
     const DeleteTicket = async () => {
-        if(userRole !== UserRole.EMPLOYEE) {
+        if (userRole !== UserRole.EMPLOYEE) {
             alert('Only Employees can delete tickets')
             return
         }
@@ -152,7 +194,7 @@ const ViewTicketDetails = ({ userRole,
     }
     const CloseTicket = async () => {
 
-        if(userRole !== UserRole.EMPLOYEE) {
+        if (userRole !== UserRole.EMPLOYEE) {
             alert('Only Employees can Close tickets')
             return
         }
@@ -162,11 +204,11 @@ const ViewTicketDetails = ({ userRole,
             return
         }
 
-        const confirmDelete = confirm(`Close '${selectedTicket?.title}' this ticket?`)
-        if (!confirmDelete) return
+        const confirmClose = confirm(`Close '${selectedTicket?.title}' this ticket?`)
+        if (!confirmClose) return
 
         try {
-            const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/employee/tickets/status/${selectedTicket?.id}`, {
+            const response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/employee/tickets/status/${selectedTicket?.id}`, {
                 status: TicketStatus.CLOSED
             }, {
                 withCredentials: true
@@ -189,7 +231,7 @@ const ViewTicketDetails = ({ userRole,
     }
     const ResolveTicket = async () => {
 
-        if(userRole !== UserRole.AGENT) {
+        if (userRole !== UserRole.AGENT) {
             alert('Only Agents can resolve tickets')
             return
         }
@@ -199,11 +241,11 @@ const ViewTicketDetails = ({ userRole,
             return
         }
 
-        const confirmDelete = confirm(`Resolve '${selectedTicket?.title}' this ticket?`)
-        if (!confirmDelete) return
+        const confirmResolve = confirm(`Resolve '${selectedTicket?.title}' this ticket?`)
+        if (!confirmResolve) return
 
         try {
-            const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/agent/tickets/status/${selectedTicket?.id}`, {
+            const response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/agent/tickets/status/${selectedTicket?.id}`, {
                 status: TicketStatus.RESOLVED
             }, {
                 withCredentials: true
@@ -226,7 +268,7 @@ const ViewTicketDetails = ({ userRole,
     }
     const RejectTicket = async () => {
 
-        if(userRole !== UserRole.AGENT) {
+        if (userRole !== UserRole.AGENT) {
             alert('Only Agents can reject tickets')
             return
         }
@@ -236,11 +278,13 @@ const ViewTicketDetails = ({ userRole,
             return
         }
 
-        const confirmDelete = confirm(`Reject '${selectedTicket?.title}' this ticket?`)
-        if (!confirmDelete) return
+        const confirmReject = confirm(`Reject '${selectedTicket?.title}' this ticket?`)
+        if (!confirmReject) return
 
         try {
-            const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/agent/tickets/${selectedTicket?.id}`, {
+            const response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/agent/tickets/status/${selectedTicket?.id}`, {
+                status: TicketStatus.REJECTED
+            }, {
                 withCredentials: true
             })
             if (response.status === 200) {
@@ -281,15 +325,24 @@ const ViewTicketDetails = ({ userRole,
                     <div className="flex flex-col items-start gap-2">
                         <span className="text-sm text-slate-500">Created by: {selectedTicket?.createdBy?.name}</span>
                         <span className="text-sm text-slate-500">Assigned to: {selectedTicket?.assignedTo ? selectedTicket?.assignedTo.name : 'Unassigned'}</span>
-                        {userRole === UserRole.ADMIN && selectedTicket?.assignedTo === null && <div>
-                            <select className='border-2 border-slate-500 outline-slate-700'>
-                                <option value="" selected hidden>Assign to Agent</option>
-                                {assignAbleAgents ? (
-                                    assignAbleAgents.map((agents, index) => agents.id !== selectedTicket?.assignedTo?.id && (<option key={index}>{agents.name}-{agents.email}</option>))
-                                ) : (<option disabled>No Agent availabe</option>)}
-                            </select>
-                            <button className='bg-green-300 hover:bg-green-500 px-4 py-1.5 m-2 rounded-md text-white'>Assign</button>
-                        </div>}
+                        {userRole === UserRole.ADMIN && (selectedTicket?.status === TicketStatus.OPEN ||
+                            selectedTicket?.status === TicketStatus.REJECTED) && <div>
+                                <select className='border-2 border-slate-500 outline-slate-700' defaultValue={selectedAgent}
+                                    onChange={(e) => setSelectedAgent(e.target.value)}>
+                                    <option value="Assign To Agent" disabled>
+                                        Assign To Agent
+                                    </option>
+                                    {assignAbleAgents && assignAbleAgents.length > 0 ? (
+                                        assignAbleAgents.map((agents, index) => agents.id !== selectedTicket?.assignedTo?.id && (<option key={index} value={agents.id}>{agents.name}-{agents.email}</option>))
+                                    ) : (<option disabled>No Agent availabe</option>)}
+                                </select>
+                                <button className='bg-green-300 hover:bg-green-500 px-4 py-1.5 m-2 rounded-md text-white'
+                                    onClick={() => handleAssignAgent(selectedAgent)}
+                                    disabled={(!selectedAgent || selectedAgent === "Assign To Agent") || assignAbleAgents?.length === 0}
+                                >
+                                    Assign
+                                </button>
+                            </div>}
                     </div>
                     <div className="mt-4">
                         <p className="text-sm text-slate-700">{selectedTicket?.description}</p>
@@ -308,6 +361,21 @@ const ViewTicketDetails = ({ userRole,
                                             <span className="font-medium bg-slate-200 p-1 rounded">
                                                 {comment.user.name}:
                                             </span> {comment.message} - <span className="text-xs text-slate-500">{new Date(comment.createdAt).toLocaleString()}</span>
+                                            {/* {comment.user.id === selectedTicket.createdBy.id && (
+                                                <div>
+                                                    <button className='ml-2 text-xs text-red-500 hover:underline'>
+                                                        Edit
+                                                    </button>
+                                                    <button className='ml-2 text-xs text-red-500 hover:underline'
+                                                        onClick={() => {
+                                                            if (comment.user.id !== selectedTicket.createdBy.id) {
+                                                                return
+                                                            }
+                                                            // Handle comment deletion logic here
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </button></div>)} */}
                                         </li>
                                     ))}
                                 </ul>

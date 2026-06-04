@@ -51,7 +51,7 @@ export class EmployeeController {
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     GetTickets(@Req() request: AuthRequest): Promise<TicketEntity[] | null> {
-        return this.employeeService.GetTickets(request.user.id );
+        return this.employeeService.GetOwnTickets(request.user.id );
     }
 
     @Get("/tickets/:ticketId")
@@ -97,12 +97,18 @@ export class EmployeeController {
         return this.employeeService.CreateComment(request.user.id ,ticketId, comment);
     }
 
-    @Get("/tickets/comments/:ticketId")
-    @UseGuards(EmployeeGuard)
-    @UsePipes(new ValidationPipe({whitelist: true}))
-    GetComments(@Param('ticketId') ticketId: string, @Req() request: AuthRequest): Promise<string[] | null> {
-        return this.employeeService.GetComments(request.user.id ,ticketId);
-    }
+
+    
+      @Patch('tickets/comments/:ticketId/:commentId')
+      @UseGuards(EmployeeGuard)
+      EditComment(
+        @Param('ticketId') ticketId: string,
+        @Param('commentId') commentId: string,
+        @Body('comment') newComment: string,
+        @Req() request: AuthRequest,
+      ) {
+        return this.employeeService.EditComment(request.user.id, ticketId, commentId, newComment);
+      }
 
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({ whitelist: true }))

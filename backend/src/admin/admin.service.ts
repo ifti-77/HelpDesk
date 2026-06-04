@@ -162,7 +162,7 @@ export class AdminService {
   async GetUsers(adminId: string): Promise<UserEntity[] | null> {
 
     return this.userRepository.find({
-      where:{id: Not(adminId)},
+      where: { id: Not(adminId) },
       select: {
         id: true,
         name: true,
@@ -199,11 +199,11 @@ export class AdminService {
       },
     });
   }
-  
-  async GetUserByRole(role:UserRole): Promise<UserEntity[] | null> {
+
+  async GetUserByRole(role: UserRole): Promise<UserEntity[] | null> {
 
     return this.userRepository.find({
-      where: {role,isActive:true},
+      where: { role, isActive: true },
       select: {
         id: true,
         name: true,
@@ -214,11 +214,11 @@ export class AdminService {
   }
 
 
-  async ResetUserPassword(adminId: string,userId: string, resetPassword: string,): Promise<UserEntity | null> {
+  async ResetUserPassword(adminId: string, userId: string, resetPassword: string,): Promise<UserEntity | null> {
 
-    const user = await this.userRepository.findOne({where:{id:userId}})
-    
-    user.passwordHash = await bcrypt.hash(resetPassword,10)
+    const user = await this.userRepository.findOne({ where: { id: userId } })
+
+    user.passwordHash = await bcrypt.hash(resetPassword, 10)
     const savedUser = await this.userRepository.save(user)
 
     delete (savedUser as any).passwordHash
@@ -236,7 +236,7 @@ export class AdminService {
       throw new BadRequestException('Invalid user role');
     }
 
-    const user = await this.userRepository.findOne({where:{id:userId}})
+    const user = await this.userRepository.findOne({ where: { id: userId } })
 
     if (adminId === userId && role !== UserRole.ADMIN) {
       throw new ForbiddenException('You cannot remove your own admin role');
@@ -255,7 +255,7 @@ export class AdminService {
     adminId: string,
     userId: string,
   ): Promise<UserEntity | null> {
-    const user = await this.userRepository.findOne({where:{id:userId}})
+    const user = await this.userRepository.findOne({ where: { id: userId } })
 
     if (adminId === userId) {
       throw new ForbiddenException('admin cannot change status')
@@ -273,7 +273,7 @@ export class AdminService {
   async DeactivateUser(adminId: string, userId: string): Promise<boolean> {
     await this.getAdminById(adminId);
 
-    const user = await this.userRepository.findOne({where:{id:userId}})
+    const user = await this.userRepository.findOne({ where: { id: userId } })
 
     if (adminId === userId) {
       throw new ForbiddenException('You cannot delete your own account');
@@ -291,7 +291,7 @@ export class AdminService {
       relations: {
         createdBy: true,
         assignedTo: true,
-        comments: true,
+        comments: { user: true },
       },
       order: {
         createdAt: 'DESC',
@@ -300,16 +300,17 @@ export class AdminService {
   }
 
   async GetTicketsByStatus(status: TicketStatus): Promise<TicketEntity[] | null> {
-    
-    return this.ticketRepository.find({where:{status}, relations: {
-      createdBy: true,
-      assignedTo: true,
-      comments: true,
-    },
-    order: {
-      createdAt: 'DESC',
-    },
-  })
+
+    return this.ticketRepository.find({
+      where: { status }, relations: {
+        createdBy: true,
+        assignedTo: true,
+        comments: { user: true },
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    })
   }
 
   async GetTicket(
@@ -319,29 +320,6 @@ export class AdminService {
     return this.getTicketById(ticketId);
   }
 
-  async UpdateTicketStatus(
-    ticketId: string,
-    status: TicketStatus,
-  ): Promise<TicketEntity | null> {
-
-    if (!Object.values(TicketStatus).includes(status)) {
-      throw new BadRequestException('Invalid ticket status');
-    }
-
-    const ticket = await this.getTicketById(ticketId);
-
-    ticket.status = status;
-
-    if (status === TicketStatus.RESOLVED) {
-      ticket.resolvedAt = new Date();
-    }
-
-    if (status === TicketStatus.CLOSED) {
-      ticket.closedAt = new Date();
-    }
-
-    return this.ticketRepository.save(ticket);
-  }
 
   async AssignTicket(
     adminId: string,
@@ -353,12 +331,19 @@ export class AdminService {
       throw new BadRequestException('assignedToId is required');
     }
 
-    if(adminId === assignedToId)
-    {
+    if (adminId === assignedToId) {
       throw new BadRequestException('Cannot assign admin')
     }
 
     const ticket = await this.getTicketById(ticketId);
+
+    if (ticket.status !== TicketStatus.OPEN && ticket.status !== TicketStatus.REJECTED) {
+      throw new BadRequestException('Cannot assign non-open or in-progress ticket')
+    }
+
+    if(ticket.assignedTo && ticket.assignedTo.id === assignedToId){
+      throw new BadRequestException('Ticket is already assigned to this user')
+    }
 
     const assignedUser = await this.userRepository.findOne({
       where: {
@@ -377,42 +362,23 @@ export class AdminService {
 
     ticket.assignedTo = assignedUser;
 
-    if (ticket.status === TicketStatus.OPEN) {
+    if (ticket.status === TicketStatus.OPEN || ticket.status === TicketStatus.REJECTED) {
       ticket.status = TicketStatus.IN_PROGRESS
     }
 
-    return this.ticketRepository.save(ticket);
+    const savedTicket = await this.ticketRepository.save(ticket)
+
+
+    return await this.ticketRepository.findOne({where: {id: savedTicket.id}, relations:{
+      comments:{user:true}, createdBy:true, assignedTo:true}})
   }
 
-  async UpdateTicketPriority(
-    ticketId: string,
-    priority: TicketPriority,
-  ): Promise<TicketEntity | null> {
-
-    if (!Object.values(TicketPriority).includes(priority)) {
-      throw new BadRequestException('Invalid ticket priority');
-    }
-
-    const ticket = await this.getTicketById(ticketId);
-
-    ticket.priority = priority;
-
-    return this.ticketRepository.save(ticket);
-  }
-
-  async DeleteTicket( ticketId: string): Promise<boolean> {
-    const ticket = await this.getTicketById(ticketId);
-
-    await this.ticketRepository.delete(ticket.id);
-
-    return true;
-  }
 
   async CreateComment(
     adminId: string,
     ticketId: string,
     comment: string,
-  ): Promise<boolean> {
+  ): Promise<TicketCommentEntity | null> {
     if (!comment || comment.trim().length < 1) {
       throw new BadRequestException('Comment is required');
     }
@@ -425,34 +391,41 @@ export class AdminService {
       ticket,
       user: admin,
       message: comment.trim(),
-    });
+    })
 
-    await this.ticketCommentRepository.save(newComment);
+    const savedComment = await this.ticketCommentRepository.save(newComment)
 
-    return true;
+    return await this.ticketCommentRepository.findOne({ where: { id: savedComment.id }, relations: { user: true } })
   }
 
-  async GetComments(ticketId: string): Promise<TicketCommentEntity[] | null> {
+  async EditComment(adminId: string,ticketId: string, commentId: string, newComment:string): Promise<TicketCommentEntity | null>
+  {
+    if(newComment || newComment.trim().length < 1){
+      throw new BadRequestException('Comment cannot be empty')
+    }
+    const comment = await this.ticketCommentRepository.findOne({
+      where:{
+        id: commentId,
+        ticket:{id:ticketId},
+        user:{id:adminId}
+      },
+      relations:{
+        user:true
+      }
+    })
+      
+      if(!Comment)
+      {
+        throw new BadRequestException("Comment not found or you don't have permission to edit this comment")
+      }
 
-    await this.getTicketById(ticketId)
+      comment.message = newComment.trim()
+      const savedComment = await this.ticketCommentRepository.save(comment)
 
-    return this.ticketCommentRepository.find({
-      where: {
-        ticket: {
-          id: ticketId,
-        },
-      },
-      relations: {
-        user: true,
-        ticket: true,
-      },
-      order: {
-        createdAt: 'ASC',
-      },
-    });
+      return await this.ticketCommentRepository.findOne({ where: { id: savedComment.id }, relations: { user: true } })
   }
 
-  async DeleteComment(ticketId: string,commentId: string): Promise<boolean> {
+  async DeleteComment(ticketId: string, commentId: string): Promise<boolean> {
 
     const comment = await this.ticketCommentRepository.findOne({
       where: {

@@ -7,6 +7,7 @@ import { Suspense, useEffect, useRef, useState } from "react"
 import z, { input } from "zod"
 import AdminTickets from "./AdminTickets"
 import UpdateProfile from "./UpdateProfile"
+import Logout from "./Logout"
 
 function AdminDashboard() {
 
@@ -64,6 +65,7 @@ function AdminDashboard() {
             >
               Update Profile
             </button>
+            <Logout />
           </nav>
         </aside>
         <section className="flex-1 p-8">
@@ -181,7 +183,7 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
             <button className="w-full rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-800"
               onClick={() => setWindowPanel && setWindowPanel('ticket')}
             >
-              View All Tickets
+              View Open Tickets
             </button>
           </div>
         </div>

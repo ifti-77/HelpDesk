@@ -1,5 +1,5 @@
 "use client"
-import { User } from "@/CustomTypes/UserType"
+import { User, UserRole } from "@/CustomTypes/UserType"
 import axios from "axios"
 
 import { useState } from "react"
@@ -62,10 +62,22 @@ function UpdateProfile({ user, setUser }: { user: User | undefined, setUser: Rea
             setMakeRequest(false)
             return
         }
+        let Url = ''
+        if(user?.role === UserRole.ADMIN) {
+            Url = `${process.env.NEXT_PUBLIC_API_URL}/admin/`
+        } else if(user?.role === UserRole.AGENT) {
+            Url = `${process.env.NEXT_PUBLIC_API_URL}/agent/`
+        } else if(user?.role === UserRole.EMPLOYEE) {
+            Url = `${process.env.NEXT_PUBLIC_API_URL}/employee/`
+        }else{
+            setErrorBackend("Invalid user role")
+            setMakeRequest(false)
+            return
+        }
 
         try {
 
-            const resUpdateNameEmail = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/admin/profile`, {
+            const resUpdateNameEmail = await axios.put(`${Url}profile`, {
                 name,
                 email
             }, {
@@ -74,7 +86,7 @@ function UpdateProfile({ user, setUser }: { user: User | undefined, setUser: Rea
             if (resUpdateNameEmail.status === 200) {
                 let updatedUser = resUpdateNameEmail.data
                 if (password) {
-                    const resUpdatePassword = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/admin/profile/password`, {
+                    const resUpdatePassword = await axios.patch(`${Url}profile/password`, {
                         password
                     }, {
                         withCredentials: true
