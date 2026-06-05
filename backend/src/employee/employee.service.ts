@@ -7,6 +7,7 @@ import { TicketEntity, TicketStatus } from '../entities/ticket.entity';
 import { TicketCommentEntity } from '../entities/ticketComment.entity';
 import { EmployeeUpdateDto } from './DTOs/employeeUpdate.dto';
 import { TicketCreateDto } from './DTOs/ticketCreate.dto';
+import { TicketUpdateDto } from './DTOs/ticketUpdate.dto';
 
 @Injectable()
 export class EmployeeService {
@@ -191,7 +192,7 @@ export class EmployeeService {
     async UpdateTicket(
         employeeId: string,
         ticketId: string,
-        updatedTicket: TicketCreateDto,
+        updatedTicket: TicketUpdateDto,
     ): Promise<TicketEntity | null> {
         const ticket = await this.getOwnTicket(employeeId, ticketId);
 
@@ -269,7 +270,7 @@ export class EmployeeService {
     }
 
     async EditComment(employeeId: string, ticketId: string, commentId: string, newComment: string): Promise<TicketCommentEntity | null> {
-        if (newComment || newComment.trim().length < 1) {
+        if (!newComment || newComment.trim() === '') {
             throw new BadRequestException('Comment cannot be empty')
         }
         const comment = await this.ticketCommentRepository.findOne({
@@ -283,7 +284,7 @@ export class EmployeeService {
             }
         })
 
-        if (!Comment) {
+        if (!comment) {
             throw new BadRequestException("Comment not found or you don't have permission to edit this comment")
         }
 
@@ -298,7 +299,6 @@ export class EmployeeService {
         ticketId: string,
         commentId: string,
     ): Promise<boolean> {
-        await this.getOwnTicket(employeeId, ticketId);
 
         const comment = await this.ticketCommentRepository.findOne({
             where: {
@@ -310,12 +310,7 @@ export class EmployeeService {
                     id: employeeId,
                 },
             },
-            relations: {
-                ticket: true,
-                user: true,
-            },
-        });
-
+        })
         if (!comment) {
             throw new NotFoundException('Comment not found');
         }

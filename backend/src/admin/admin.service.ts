@@ -400,7 +400,7 @@ export class AdminService {
 
   async EditComment(adminId: string,ticketId: string, commentId: string, newComment:string): Promise<TicketCommentEntity | null>
   {
-    if(newComment || newComment.trim().length < 1){
+    if(!newComment || newComment.trim() === ''){
       throw new BadRequestException('Comment cannot be empty')
     }
     const comment = await this.ticketCommentRepository.findOne({
@@ -414,7 +414,7 @@ export class AdminService {
       }
     })
       
-      if(!Comment)
+      if(!comment)
       {
         throw new BadRequestException("Comment not found or you don't have permission to edit this comment")
       }
@@ -425,7 +425,7 @@ export class AdminService {
       return await this.ticketCommentRepository.findOne({ where: { id: savedComment.id }, relations: { user: true } })
   }
 
-  async DeleteComment(ticketId: string, commentId: string): Promise<boolean> {
+  async DeleteComment(adminId: string, ticketId: string, commentId: string): Promise<boolean> {
 
     const comment = await this.ticketCommentRepository.findOne({
       where: {
@@ -433,6 +433,9 @@ export class AdminService {
         ticket: {
           id: ticketId,
         },
+        user: {
+          id: adminId
+        }
       },
       relations: {
         ticket: true,

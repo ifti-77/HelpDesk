@@ -78,7 +78,7 @@ function AgentDashboard() {
           <Suspense fallback={<p>Loading dashboard...</p>}>
 
             {/* {windowPanel === 'dashboard' && <DashBoardComponent setWindowPanel={setWindowPanel} />} */}
-            { windowPanel === 'ticket' && <AgentTickets  /> }
+            { windowPanel === 'ticket' && <AgentTickets  agentId={agent?.id ?? ''}/> }
             { windowPanel === 'update-profile' && <UpdateProfile user={agent} setUser={setAgent} /> }
           </Suspense>
         </section>

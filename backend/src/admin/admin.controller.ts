@@ -8,6 +8,7 @@ import { TicketCreateDto } from '../employee/DTOs/ticketCreate.dto';
 import { TicketPriority, TicketStatus } from '../entities/ticket.entity';
 import { UserEntity, UserRole } from '../entities/user.entity';
 import { CreateUserDto } from './DTOs/createUser.dto';
+import { TicketCommentEntity } from 'src/entities/ticketComment.entity';
 
 interface AuthRequest extends Request {
   user: { id: string; role: string };
@@ -186,18 +187,19 @@ export class AdminController {
     @Param('commentId') commentId: string,
     @Body('comment') newComment: string,
     @Req() request: AuthRequest,
-  ) {
+  ): Promise<TicketCommentEntity | null> {
     return this.adminService.EditComment(request.user.id, ticketId, commentId, newComment);
   }
 
-  @Delete('tickets/comments/')
+  @Delete('/tickets/comments/:ticketId/:commentId')
   @UseGuards(AdminGuard)
   DeleteComment(
-    @Query('ticketId') ticketId: string,
-    @Query('commentId') commentId: string,
+    @Param('ticketId') ticketId: string,
+    @Param('commentId') commentId: string,
     @Req() request: AuthRequest,
   ) {
     return this.adminService.DeleteComment(
+      request.user.id,
       ticketId,
       commentId,
     );

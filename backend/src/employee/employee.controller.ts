@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Patch, UseGuards, UsePipes, ValidationPipe, Req, Delete } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, Patch, UseGuards, UsePipes, ValidationPipe, Req, Delete, Query } from "@nestjs/common";
 import { EmployeeService } from "./employee.service";
 import { UserEntity } from "../entities/user.entity";
 import { EmployeeUpdateDto } from "./DTOs/employeeUpdate.dto";
@@ -7,6 +7,7 @@ import { TicketEntity, TicketStatus } from "../entities/ticket.entity";
 import { EmployeeGuard } from "./employee.guard";
 import type { Request } from "express";
 import { TicketCommentEntity } from "src/entities/ticketComment.entity";
+import { TicketUpdateDto } from "./DTOs/ticketUpdate.dto";
 
 interface AuthRequest extends Request {
     user: { id: string };
@@ -68,10 +69,10 @@ export class EmployeeController {
         return this.employeeService.GetTicketsByStatus(request.user.id ,status);
     }
 
-    @Patch("/tickets/:ticketId")
+    @Put("/tickets/:ticketId")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
-    UpdateTicket(@Param('ticketId') ticketId: string, @Body() updatedTicket: TicketCreateDto, @Req() request: AuthRequest): Promise<TicketEntity | null> {
+    UpdateTicket(@Param('ticketId') ticketId: string, @Body() updatedTicket: TicketUpdateDto, @Req() request: AuthRequest): Promise<TicketEntity | null> {
         return this.employeeService.UpdateTicket(request.user.id ,ticketId, updatedTicket);
     }
 
@@ -106,7 +107,7 @@ export class EmployeeController {
         @Param('commentId') commentId: string,
         @Body('comment') newComment: string,
         @Req() request: AuthRequest,
-      ) {
+      ): Promise<TicketCommentEntity | null> {
         return this.employeeService.EditComment(request.user.id, ticketId, commentId, newComment);
       }
 

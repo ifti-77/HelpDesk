@@ -5,7 +5,8 @@ import { UserRole } from '@/CustomTypes/UserType'
 import axios from 'axios'
 import ViewTicketDetails from './ViewTicketDetails'
 import CreateTicket from './CreateTicket'
-function EmployeeTickets() {
+import UpdateTicket from './UpdateTicket'
+function EmployeeTickets({employeeId}:{employeeId:string}) {
     const [viewWindow, setViewWindow] = React.useState<'create-tickets' | 'view-tickets' | TicketStatus.CLOSED>('create-tickets')
     const [tickets, setTickets] = React.useState<Ticket[] | null>([{
         id: '1', title: 'Sample Ticket',
@@ -22,7 +23,8 @@ function EmployeeTickets() {
         updatedAt: new Date() as any
     } as Ticket])
     const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(null)
-    const [viewTicketDetails, setViewTicketDetails] = React.useState(false)
+    const [viewTicketDetails, setViewTicketDetails] = React.useState<boolean>(false)
+    const [updateTicketView, setUpdateTicketView] = React.useState<boolean>(false)
 
 
 
@@ -103,16 +105,27 @@ function EmployeeTickets() {
                                 }} className="text-blue-600 hover:underline">
                                     View Details
                                 </button>
+                                {ticket.status === TicketStatus.OPEN && <button onClick={() => {
+                                    setSelectedTicket(ticket);
+                                    setUpdateTicketView(true);
+                                }} className="text-orange-600 hover:underline">Update</button>}
                             </div>
                         ))}
                     </div>) : (<div className="my-4 space-y-4 rounded-lg bg-slate-100 p-4"> <p>No {viewWindow} Ticket Available</p></div>)}
                 </div>)}
             </div>
 
-            {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.EMPLOYEE}
+            {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.EMPLOYEE} userId={employeeId}
                 setTickets={setTickets}
                 selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket}
                 viewTicketDetails={viewTicketDetails} setViewTicketDetails={setViewTicketDetails} />)}
+
+            {(updateTicketView && selectedTicket) && (<UpdateTicket
+                selectedTicket={selectedTicket}
+                setSelectedTicket={setSelectedTicket}
+                setUpdateTicketView={setUpdateTicketView}
+                setTickets={setTickets}
+            />)}
         </div>
     )
 

@@ -6,11 +6,12 @@ import axios from 'axios'
 
 import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 
-const ViewTicketDetails = ({ userRole,
+
+const ViewTicketDetails = ({ userRole, userId,
     setTickets,
     selectedTicket, setSelectedTicket,
     viewTicketDetails, setViewTicketDetails }: {
-        userRole: UserRole | null,
+        userRole: UserRole | null, userId: string,
         setTickets: React.Dispatch<React.SetStateAction<Ticket[] | null>>,
         selectedTicket: Ticket | null,
         setSelectedTicket: React.Dispatch<React.SetStateAction<Ticket | null>>,
@@ -21,7 +22,17 @@ const ViewTicketDetails = ({ userRole,
     const [selectedAgent, setSelectedAgent] = useState<string>("Assign To Agent")
 
     const textareaRef = useRef<HTMLTextAreaElement>(null)
-    const [value, setValue] = useState("")
+    const [value, setValue] = useState("") //post comment textarea value
+
+    const [isEdit, setIsEdit] = useState<boolean>(false)
+    const [selectedComment, setSelectedComment] = useState<string>('')
+    const [editCommentValue, setEditCommentValue] = useState<string>('')
+    const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
+
+
+
+
+
 
     useEffect(() => {
         if (userRole === UserRole.ADMIN &&
@@ -56,6 +67,13 @@ const ViewTicketDetails = ({ userRole,
             textareaRef.current.style.height = textareaRef.current?.scrollHeight + "px"
         }
     }, [value])
+
+    useLayoutEffect(() => {
+        if (commentTextareaRef.current) {
+            commentTextareaRef.current.style.height = "auto"
+            commentTextareaRef.current.style.height = commentTextareaRef.current?.scrollHeight + "px"
+        }
+    }, [editCommentValue])
 
     const handleAssignAgent = async (agentId: string) => {
         if (userRole !== UserRole.ADMIN) {
@@ -304,6 +322,121 @@ const ViewTicketDetails = ({ userRole,
         }
     }
 
+    const UpdateComment = async () => {
+
+        const updatedComment = editCommentValue.trim()
+        
+        if (updatedComment === '') {
+            alert('Comment is empty')
+            return
+        }
+
+        if (!selectedComment) {
+            alert('No comment selected')
+            return
+        }
+
+        let url = ''
+
+        if(userRole === UserRole.ADMIN)
+        {
+            url = `${process.env.NEXT_PUBLIC_API_URL}/admin`
+        }else if(userRole === UserRole.AGENT)
+        {
+            url = `${process.env.NEXT_PUBLIC_API_URL}/agent`
+        }else if(userRole === UserRole.EMPLOYEE)
+        {
+            url = `${process.env.NEXT_PUBLIC_API_URL}/employee`
+        }else{
+            alert('Invalid user role')
+            return
+        }
+
+        try {
+            const response = await axios.patch(`${url}/tickets/comments/${selectedTicket?.id}/${selectedComment}`,
+                {comment: updatedComment}, {
+                    withCredentials:true
+                }
+            )
+
+            if(response.status === 200)
+            {
+                const data = await response.data
+
+                if(data !== null)
+                {
+                    
+                    setSelectedTicket((ticket) => (ticket && {...ticket, comments: ticket?.comments?.map(comment => comment.id === data?.id ? data : comment)}))
+                    setTickets((tickets) => tickets ? tickets.map(ticket => ticket.id === selectedTicket?.id ? {...ticket, comments: ticket.comments?.map(comment => comment.id === data?.id ? data : comment)} : ticket) : tickets)
+                    setSelectedComment('')
+                    setEditCommentValue('')
+                    setIsEdit(false)
+                }
+            }
+
+        } catch (error) {
+                if (axios.isAxiosError(error) && error.response) {
+                    alert( error.response.data?.message)
+                }else if(error instanceof Error){
+                    alert(error.message)
+                }
+        }
+    }
+    const DeleteComment = async (commentId: string) => {
+
+        if(!commentId)
+        {
+            alert('Invalid comment ID')
+            return
+        }
+
+        const confirmDelete = confirm(`Delete this comment?`)
+
+        if(!confirmDelete) return
+
+        let url = ''
+
+        if(userRole === UserRole.ADMIN)
+        {
+            url = `${process.env.NEXT_PUBLIC_API_URL}/admin`
+        }else if(userRole === UserRole.AGENT)
+        {
+            url = `${process.env.NEXT_PUBLIC_API_URL}/agent`
+        }else if(userRole === UserRole.EMPLOYEE)
+        {
+            url = `${process.env.NEXT_PUBLIC_API_URL}/employee`
+        }else{
+            alert('Invalid user role')
+            return
+        }
+
+        try {
+            const response = await axios.delete(`${url}/tickets/comments/${selectedTicket?.id}/${commentId}`, {
+                withCredentials:true
+            })
+
+            if(response.status === 200)
+            {
+                const data = await response.data
+
+                if(data === true)
+                {
+                    
+                    setSelectedTicket((ticket) => (ticket && {...ticket, comments: ticket?.comments?.filter(comment => comment.id !== commentId)}))
+                    setTickets((tickets) => tickets ? tickets.map(ticket => ticket.id === selectedTicket?.id ? {...ticket, comments: ticket.comments?.filter(comment => comment.id !== commentId)} : ticket) : tickets)
+
+                }
+            }
+
+        } catch (error) {
+                if (axios.isAxiosError(error) && error.response) {
+                    alert( error.response.data?.message)
+                }else if(error instanceof Error){
+                    alert(error.message)
+                }
+        }
+    }
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
             <div className="w-full max-w-[90%] rounded-2xl bg-white p-6 shadow-2xl">
@@ -322,6 +455,9 @@ const ViewTicketDetails = ({ userRole,
                             {ReturnStatusStyle(selectedTicket?.status)}
                         </div>
                     </div>
+                        <p className="my-1 text-sm text-slate-500">
+                            Category: {selectedTicket?.category}
+                        </p>
                     <div className="flex flex-col items-start gap-2">
                         <span className="text-sm text-slate-500">Created by: {selectedTicket?.createdBy?.name}</span>
                         <span className="text-sm text-slate-500">Assigned to: {selectedTicket?.assignedTo ? selectedTicket?.assignedTo.name : 'Unassigned'}</span>
@@ -348,8 +484,8 @@ const ViewTicketDetails = ({ userRole,
                         <p className="text-sm text-slate-700">{selectedTicket?.description}</p>
                     </div>
 
-                    <div className="w-full flex justify-between gap-2 mt-4 overflow-auto max-h-60 rounded-lg bg-slate-50 p-4">
-                        <div>
+                    <div className="w-full flex justify-between gap-2 mt-4 max-h-60 rounded-lg bg-slate-50 p-4">
+                        <div className='min-w-[45%] overflow-auto'>
 
                             <h3 className="text-lg font-semibold text-slate-900">Comments</h3>
                             {selectedTicket?.comments.length === 0 ? (
@@ -360,22 +496,43 @@ const ViewTicketDetails = ({ userRole,
                                         <li key={index} className="text-sm text-slate-700 bg-slate-100 p-3 rounded-lg">
                                             <span className="font-medium bg-slate-200 p-1 rounded">
                                                 {comment.user.name}:
-                                            </span> {comment.message} - <span className="text-xs text-slate-500">{new Date(comment.createdAt).toLocaleString()}</span>
-                                            {/* {comment.user.id === selectedTicket.createdBy.id && (
-                                                <div>
-                                                    <button className='ml-2 text-xs text-red-500 hover:underline'>
+                                            </span> {(isEdit && selectedComment === comment.id) ? (
+                                                <textarea
+                                                    className="border border-slate-300 p-1 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 resize-none"
+                                                    ref={commentTextareaRef}
+                                                    value={editCommentValue}
+                                                    onChange={(e) => setEditCommentValue(e.target.value) }></textarea>
+                                            ) : comment.message} - <span className="text-xs text-slate-500">{new Date(comment.createdAt).toLocaleString()}</span>
+                                            {(userId && comment.user.id === userId) && (
+                                                !isEdit ? <div>
+                                                    <button className='ml-2 text-xs text-red-500 hover:underline'
+                                                        onClick={() => {
+                                                            setEditCommentValue(comment.message)
+                                                            setIsEdit(true)
+                                                            setSelectedComment(comment.id)
+                                                        }}>
                                                         Edit
                                                     </button>
                                                     <button className='ml-2 text-xs text-red-500 hover:underline'
-                                                        onClick={() => {
-                                                            if (comment.user.id !== selectedTicket.createdBy.id) {
-                                                                return
-                                                            }
-                                                            // Handle comment deletion logic here
-                                                        }}
+                                                    onClick={()=>DeleteComment(comment.id)}
                                                     >
                                                         Delete
-                                                    </button></div>)} */}
+                                                    </button>
+                                                </div> : <div>
+                                                    <button className='ml-2 text-xs text-red-500 hover:underline'
+                                                        onClick={() => UpdateComment()}>
+                                                        Update
+                                                    </button>
+                                                    <button className='ml-2 text-xs text-red-500 hover:underline'
+                                                        onClick={() => {
+                                                            setEditCommentValue('')
+                                                            setIsEdit(false)
+                                                            setSelectedComment('')
+                                                        }}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>)}
                                         </li>
                                     ))}
                                 </ul>
@@ -389,7 +546,6 @@ const ViewTicketDetails = ({ userRole,
                                     value={value}
                                     onChange={(e) => setValue(e.target.value)}
                                     placeholder="Add a comment...">
-
                                 </textarea>
                                 <button className='block bg-transparent border-b rounded-md px-3 py-1 hover:text-blue-700 border-b-blue-500 hover:border-2
                                          hover:border-blue-600 transition-all delay-25 duration-50 ease-in-out cursor-pointer'

@@ -4,22 +4,9 @@ import { Ticket, TicketStatus } from '@/CustomTypes/TicketType'
 import { UserRole } from '@/CustomTypes/UserType'
 import axios from 'axios'
 import ViewTicketDetails from './ViewTicketDetails'
-function AdminTickets() {
+function AdminTickets({adminId}:{adminId:string}) {
     const [viewWindow, setViewWindow] = React.useState<TicketStatus.OPEN | TicketStatus.IN_PROGRESS | TicketStatus.REJECTED>(TicketStatus.OPEN)
-    const [tickets, setTickets] = React.useState<Ticket[] | null>([{
-        id: '1', title: 'Sample Ticket',
-        priority: 'MEDIUM' as any,
-        status: TicketStatus.OPEN as any,
-        description: 'This is a sample ticket.',
-        createdBy: { name: 'John Doe' } as any,
-        assignedTo: null,
-        category: 'Bug Report' as any,
-        comments: [{ user: { name: 'John Doe' }, message: 'This is a sample comment.', createdAt: new Date() },
-        { user: { name: 'Jane Smith' }, message: 'This is another comment.', createdAt: new Date() },
-        { user: { name: 'Jane Doe' }, message: 'This is another 2nd comment.', createdAt: new Date() }] as any[],
-        createdAt: new Date() as any,
-        updatedAt: new Date() as any
-    } as Ticket])
+    const [tickets, setTickets] = React.useState<Ticket[] | null>(null)
     const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(null)
     const [viewTicketDetails, setViewTicketDetails] = React.useState(false)
 
@@ -89,7 +76,7 @@ function AdminTickets() {
             </div>):(<div className="my-4 space-y-4 rounded-lg bg-slate-100 p-4"> <p>No {viewWindow} Ticket Available</p></div>)}
 
 
-            {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.ADMIN}
+            {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.ADMIN} userId={adminId}
                 setTickets={setTickets} 
             selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket} 
             viewTicketDetails={viewTicketDetails} setViewTicketDetails={setViewTicketDetails} />)}

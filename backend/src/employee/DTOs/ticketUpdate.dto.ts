@@ -1,7 +1,8 @@
-import { IsEnum, IsNotEmpty, Length } from "class-validator"
+import { IsEnum, IsIn, IsNotEmpty, Length } from "class-validator"
 import { Categories, TicketPriority, TicketStatus } from "../../entities/ticket.entity";
 
-export class TicketCreateDto{
+
+export class TicketUpdateDto{
     
     @IsNotEmpty()
     @Length(5, 150)
@@ -12,6 +13,7 @@ export class TicketCreateDto{
 
     @IsNotEmpty()
     @IsEnum(TicketStatus)
+    @IsIn([TicketStatus.OPEN])
     status!: TicketStatus;
 
     @IsNotEmpty()

@@ -5,7 +5,7 @@ import { UserRole } from '@/CustomTypes/UserType'
 import axios from 'axios'
 import ViewTicketDetails from './ViewTicketDetails'
 
-function AgentTickets() {
+function AgentTickets({agentId}:{agentId:string}) {
     const [viewWindow, setViewWindow] = React.useState<TicketStatus.IN_PROGRESS | TicketStatus.REJECTED | TicketStatus.RESOLVED >(TicketStatus.IN_PROGRESS)
     const [tickets, setTickets] = React.useState<Ticket[] | null>(null)
     const [selectedTicket, setSelectedTicket] = React.useState<Ticket | null>(null)
@@ -86,7 +86,7 @@ function AgentTickets() {
                 </div>
             </div>
 
-            {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.AGENT}
+            {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.AGENT} userId={agentId}
                 setTickets={setTickets}
                 selectedTicket={selectedTicket} setSelectedTicket={setSelectedTicket}
                 viewTicketDetails={viewTicketDetails} setViewTicketDetails={setViewTicketDetails} />)}

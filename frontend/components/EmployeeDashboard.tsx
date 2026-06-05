@@ -77,7 +77,7 @@ function EmployeeDashboard() {
           <Suspense fallback={<p>Loading dashboard...</p>}>
 
             {/* {windowPanel === 'dashboard' && <DashBoardComponent setWindowPanel={setWindowPanel} />} */}
-            { windowPanel === 'ticket' && <EmployeeTickets  /> }
+            { windowPanel === 'ticket' && <EmployeeTickets  employeeId={employee?.id ?? ''}/> }
             { windowPanel === 'update-profile' && <UpdateProfile user={employee} setUser={setEmployee} /> }
           </Suspense>
         </section>

@@ -1,10 +1,11 @@
-import {Body,Controller,Delete,Get,Param,Patch,Put,Req,UseGuards,UsePipes,ValidationPipe,Post,} from '@nestjs/common';
+import {Body,Controller,Delete,Get,Param,Patch,Put,Req,UseGuards,UsePipes,ValidationPipe,Post, Query,} from '@nestjs/common';
 import type { Request } from 'express';
 
 import { AgentService } from './agent.service';
 import { AgentGuard } from './agent.guard';
 import { EmployeeUpdateDto } from '../employee/DTOs/employeeUpdate.dto';
 import { TicketPriority, TicketStatus } from '../entities/ticket.entity';
+import { TicketCommentEntity } from 'src/entities/ticketComment.entity';
 
 interface AuthRequest extends Request {
     user: { id: string; role: string };
@@ -94,11 +95,11 @@ export class AgentController {
     @Param('commentId') commentId: string,
     @Body('comment') newComment: string,
     @Req() request: AuthRequest,
-  ) {
+  ): Promise<TicketCommentEntity | null> {
     return this.agentService.EditComment(request.user.id, ticketId, commentId, newComment);
   }
 
-    @Delete('tickets/comments/:ticketId/:commentId')
+    @Delete('/tickets/comments/:ticketId/:commentId')
     @UseGuards(AgentGuard)
     DeleteComment(
         @Param('ticketId') ticketId: string,

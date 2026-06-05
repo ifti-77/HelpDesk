@@ -225,7 +225,7 @@ export class AgentService {
   }
 
   async EditComment(agentId: string, ticketId: string, commentId: string, newComment: string): Promise<TicketCommentEntity | null> {
-    if (newComment || newComment.trim().length < 1) {
+    if (!newComment || newComment.trim() === '') {
       throw new BadRequestException('Comment cannot be empty')
     }
     const comment = await this.ticketCommentRepository.findOne({
@@ -239,7 +239,7 @@ export class AgentService {
       }
     })
 
-    if (!Comment) {
+    if (!comment) {
       throw new BadRequestException("Comment not found or you don't have permission to edit this comment")
     }
 
@@ -262,6 +262,7 @@ export class AgentService {
         ticket: {
           id: ticketId,
         },
+        user:{id: agentId}
       },
       relations: {
         ticket: true,
@@ -273,9 +274,6 @@ export class AgentService {
       throw new NotFoundException('Comment not found');
     }
 
-    if (comment.user.id !== agentId) {
-      throw new ForbiddenException('You can delete only your own comment');
-    }
 
     await this.ticketCommentRepository.delete(comment.id);
 

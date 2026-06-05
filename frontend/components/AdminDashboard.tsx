@@ -86,7 +86,7 @@ function AdminDashboard() {
             {windowPanel === 'dashboard' && <DashBoardComponent setWindowPanel={setWindowPanel} />}
             {windowPanel === 'createuser' && <ManageUsers props="create" />}
             {windowPanel === 'viewuser' && <ManageUsers props="view" />}
-            { windowPanel === 'ticket' && <AdminTickets  /> }
+            { windowPanel === 'ticket' && <AdminTickets  adminId={admin?.id ?? ''}/> }
             { windowPanel === 'update-profile' && <UpdateProfile user={admin} setUser={setAdmin} /> }
           </Suspense>
         </section>
