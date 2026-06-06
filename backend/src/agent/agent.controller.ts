@@ -1,10 +1,10 @@
-import {Body,Controller,Delete,Get,Param,Patch,Put,Req,UseGuards,UsePipes,ValidationPipe,Post, Query,} from '@nestjs/common';
+import {Body,Controller,Delete,Get,Param,Patch,Put,Req,UseGuards,UsePipes,ValidationPipe,Post, Query, ParseUUIDPipe,} from '@nestjs/common';
 import type { Request } from 'express';
 
 import { AgentService } from './agent.service';
 import { AgentGuard } from './agent.guard';
 import { EmployeeUpdateDto } from '../employee/DTOs/employeeUpdate.dto';
-import { TicketPriority, TicketStatus } from '../entities/ticket.entity';
+import { TicketEntity, TicketPriority, TicketStatus } from '../entities/ticket.entity';
 import { TicketCommentEntity } from 'src/entities/ticketComment.entity';
 
 interface AuthRequest extends Request {
@@ -55,11 +55,12 @@ export class AgentController {
 
     @Get('tickets/:ticketId')
     @UseGuards(AgentGuard)
+    @UsePipes(new ValidationPipe({whitelist: true}))
     GetTicket(
-        @Param('ticketId') ticketId: string,
+        @Param('ticketId', new ParseUUIDPipe()) ticketId: string,
         @Req() request: AuthRequest,
-    ) {
-        return this.agentService.GetTicket(request.user.id, ticketId);
+    ): Promise<TicketEntity[] | null> {
+        return this.agentService.GetTicket(request.user.id, ticketId)
     }
 
     @Patch('tickets/status/:ticketId')
@@ -111,5 +112,11 @@ export class AgentController {
             ticketId,
             commentId,
         );
+    }
+
+    @Get('resources/totalcounts')
+    @UseGuards(AgentGuard)
+    GetTotalTicketsCount(@Req() request: AuthRequest): Promise<{ total: number, inProgress: number, resolved: number, closed: number }> {
+        return this.agentService.GetTotalTicketsCount(request.user.id)
     }
 }

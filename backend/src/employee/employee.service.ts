@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { Not, Repository } from 'typeorm';
+import { Like, Not, Repository } from 'typeorm';
 import { UserEntity, UserRole } from '../entities/user.entity';
 import { TicketEntity, TicketStatus } from '../entities/ticket.entity';
 import { TicketCommentEntity } from '../entities/ticketComment.entity';
@@ -163,8 +163,10 @@ export class EmployeeService {
     async GetTicket(
         employeeId: string,
         ticketId: string,
-    ): Promise<TicketEntity | null> {
-        return this.getOwnTicket(employeeId, ticketId);
+    ): Promise<TicketEntity[] | null> {
+        return this.ticketRepository.find({where:{id: ticketId, 
+        createdBy: { id: employeeId }}, 
+        relations:{createdBy: true, assignedTo: true, comments: { user: true }}})
     }
 
     async GetTicketsByStatus(
@@ -318,5 +320,17 @@ export class EmployeeService {
         await this.ticketCommentRepository.delete(comment.id);
 
         return true;
+    }
+
+    async GetTotalTicketsCount(employeeId: string): Promise<{ total: number, open: number, inProgress: number, resolved: number, closed: number }> {
+        const [total, open, inProgress, resolved, closed] = await Promise.all([
+            this.ticketRepository.count({ where: { createdBy: { id: employeeId } } }),
+            this.ticketRepository.count({ where: { createdBy: { id: employeeId }, status: TicketStatus.OPEN } }),
+            this.ticketRepository.count({ where: { createdBy: { id: employeeId }, status: TicketStatus.IN_PROGRESS } }),
+            this.ticketRepository.count({ where: { createdBy: { id: employeeId }, status: TicketStatus.RESOLVED } }),
+            this.ticketRepository.count({ where: { createdBy: { id: employeeId }, status: TicketStatus.CLOSED } }),
+        ]);
+
+        return { total, open, inProgress, resolved, closed };
     }
 }

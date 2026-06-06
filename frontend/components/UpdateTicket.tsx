@@ -93,29 +93,33 @@ function UpdateTicket({ selectedTicket,
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
-            <div className="w-full max-w-[90%] rounded-2xl bg-white p-6 shadow-2xl">
-                <form className="mb-5 flex flex-col items-start justify-between" onSubmit={handleUpdateTicket}>
-                    {errorBackend && (
-                        <div className="mb-4 p-4 bg-blue-100 border border-red-700 text-red-700 rounded">
+            <div className="w-full max-w-[50%] rounded-2xl bg-white p-6 shadow-2xl">
+                <h2 className="text-2xl font-bold mb-4">Update Ticket: 
+                    <span className="font-normal italic bg-indigo-100 px-2 py-1 rounded-sm">{selectedTicket?.id}</span></h2>
+                {errorBackend && (
+                        <div className="mb-4 p-4 bg-red-50 border border-red-700 text-red-700 rounded-sm">
                             {errorBackend}
                         </div>
                     )}
+                <form className="space-y-4" onSubmit={handleUpdateTicket}>
+                    
                     <div>
-                        <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
+                        <label htmlFor="title" className="block text-md font-medium text-gray-700">Title</label>
                         <span className="text-red-500">{errorFrontend?.title && errorFrontend.title.join(', ')}</span>
                         <input type="text" id="title" name="title" value={updateTitle} onChange={(e) => setUpdateTitle(e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Enter ticket title" />
+                        className="mt-1 py-1.5 px-2 block w-full rounded-sm border border-gray-300 outline-indigo-300 sm:text-sm" placeholder="Enter ticket title" />
                     </div>
                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
+                        <label htmlFor="description" className="block text-md font-medium text-gray-700">Description</label>
                         <span className="text-red-500">{errorFrontend?.description && errorFrontend.description.join(', ')}</span>
                         <textarea id="description" name="description" rows={4} value={updateDescription} onChange={(e) => setUpdateDescription(e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Describe the issue in detail"></textarea>
+                        className="mt-1 py-1.5 px-2 block w-full rounded-sm border border-gray-300 outline-indigo-300 resize-none sm:text-sm" placeholder="Describe the issue in detail"></textarea>
                     </div>
                     <div>
-                        <label htmlFor="priority" className="block text-sm font-medium text-gray-700">Priority</label>
+                        <label htmlFor="priority" className="block text-md font-medium text-gray-700">Priority</label>
                         <span className="text-red-500">{errorFrontend?.priority && errorFrontend.priority.join(', ')}</span>
-                        <select id="priority" name="priority" value={updatePriority} onChange={(e) => setUpdatePriority(e.target.value as TicketPriority)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        <select id="priority" name="priority" value={updatePriority} onChange={(e) => setUpdatePriority(e.target.value as TicketPriority)} 
+                        className="mt-1 py-1.5 px-2 block w-full rounded-sm border border-gray-300 outline-indigo-300 sm:text-sm">
                             <option value="" hidden>Select priority</option>
                             <option value={TicketPriority.LOW}>{TicketPriority.LOW}</option>
                             <option value={TicketPriority.MEDIUM}>{TicketPriority.MEDIUM}</option>
@@ -124,9 +128,10 @@ function UpdateTicket({ selectedTicket,
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+                        <label htmlFor="category" className="block text-md font-medium text-gray-700">Category</label>
                         <span className="text-red-500">{errorFrontend?.category && errorFrontend.category.join(', ')}</span>
-                        <select id="category" name="category" value={updateCategory} onChange={(e) => setUpdateCategory(e.target.value as Categories)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        <select id="category" name="category" value={updateCategory} onChange={(e) => setUpdateCategory(e.target.value as Categories)} 
+                        className="mt-1 py-1.5 px-2 block w-full rounded-sm border border-gray-300 outline-indigo-300 sm:text-sm">
                             <option value="" hidden>Select category</option>
                             <option value={Categories.Account}>{Categories.Account}</option>
                             <option value={Categories.Asset}>{Categories.Asset}</option>
@@ -136,11 +141,12 @@ function UpdateTicket({ selectedTicket,
                             <option value={Categories.Software}>{Categories.Software}</option>
                         </select>
                     </div>
-                    <button type='submit' className='bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' disabled={updateing}>
+                    <button type='submit' className='bg-blue-500 text-white py-2 px-4 rounded-sm hover:bg-blue-600 ' disabled={updateing}>
                         {updateing ? 'Updating...' : 'Update Ticket'}
                     </button>
                 </form>
-                <button onClick={() => setUpdateTicketView(false)} className='text-gray-500 hover:underline'>
+                <button onClick={() => setUpdateTicketView(false)} 
+                className='border rounded-sm border-amber-600 text-amber-500 hover:bg-amber-500 hover:text-white  mt-4 px-4 py-2'>
                     Cancel
                 </button>
             </div>

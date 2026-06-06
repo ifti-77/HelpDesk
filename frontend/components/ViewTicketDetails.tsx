@@ -441,11 +441,14 @@ const ViewTicketDetails = ({ userRole, userId,
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
             <div className="w-full max-w-[90%] rounded-2xl bg-white p-6 shadow-2xl">
                 <div className="mb-5 flex flex-col items-start justify-between">
+                        <h2 className="text-xl font-bold text-slate-900">Ticket Details</h2> 
                     <div className="flex w-full items-center justify-between">
-                        <h2 className="text-xl font-bold text-slate-900">Ticket Details</h2>
                         <p className="mt-1 text-sm text-slate-500">
                             {selectedTicket?.title}
                         </p>
+                        <span className="mt-1 text-sm text-slate-700 border border-slate-300 rounded-md px-2 py-1">
+                            {selectedTicket?.id}
+                        </span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${selectedTicket?.priority === 'HIGH' ? 'bg-red-100 text-red-800' : selectedTicket?.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
@@ -456,11 +459,17 @@ const ViewTicketDetails = ({ userRole, userId,
                         </div>
                     </div>
                         <p className="my-1 text-sm text-slate-500">
-                            Category: {selectedTicket?.category}
+                            Category: {selectedTicket?.category} 
+                            <span className="mx-2">|</span> Created At: {new Date(selectedTicket?.createdAt || '').toLocaleString()}
+                            <span className="mx-2">|</span> Updated At: {new Date(selectedTicket?.updatedAt || '').toLocaleString()}
+                            <span className="mx-2">|</span> Resolved At: {selectedTicket?.resolvedAt ? new Date(selectedTicket?.resolvedAt || '').toLocaleString() : 'Not yet'}
                         </p>
-                    <div className="flex flex-col items-start gap-2">
-                        <span className="text-sm text-slate-500">Created by: {selectedTicket?.createdBy?.name}</span>
-                        <span className="text-sm text-slate-500">Assigned to: {selectedTicket?.assignedTo ? selectedTicket?.assignedTo.name : 'Unassigned'}</span>
+                        
+                    <div className="flex flex-col items-start gap-2 mt-2">
+                        <span className="text-sm text-slate-500">Created by: 
+                            <span className='text-sm text-blue-950 font-medium'>{' '+selectedTicket?.createdBy?.name}</span></span>
+                        <span className="text-sm text-slate-500">Assigned to: 
+                            <span className='text-sm text-blue-950 font-medium'>{' '+selectedTicket?.assignedTo ? selectedTicket?.assignedTo?.name : 'Unassigned'}</span></span>
                         {userRole === UserRole.ADMIN && (selectedTicket?.status === TicketStatus.OPEN ||
                             selectedTicket?.status === TicketStatus.REJECTED) && <div>
                                 <select className='border-2 border-slate-500 outline-slate-700' defaultValue={selectedAgent}
@@ -480,8 +489,11 @@ const ViewTicketDetails = ({ userRole, userId,
                                 </button>
                             </div>}
                     </div>
-                    <div className="mt-4">
-                        <p className="text-sm text-slate-700">{selectedTicket?.description}</p>
+                    <div className="mt-4 text-xs text-slate-700 w-[75%]">
+                        <p className=''> Description:</p>
+                        <textarea className="text-sm text-indigo-950 border border-slate-300 px-3 py-1.5 resize-none w-full h-24" disabled
+                        defaultValue={selectedTicket?.description}>
+                        </textarea>
                     </div>
 
                     <div className="w-full flex justify-between gap-2 mt-4 max-h-60 rounded-lg bg-slate-50 p-4">

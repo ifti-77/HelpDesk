@@ -36,31 +36,31 @@ function AdminDashboard() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-slate-100 p-1.5">
-      <div className="flex min-h-[calc(100vh-3rem)] overflow-hidden bg-white">
-        <aside className="w-64 border-r border-slate-200 bg-slate-950 p-6 text-white">
+    <main className="min-h-screen bg-slate-100 ">
+      <div className="flex min-h-[calc(100vh)] overflow-hidden bg-white">
+        <aside className="w-64 min-h-[calc(100vh)] border-r border-slate-200 bg-slate-950 p-6 text-white">
           <h1 className="mb-8 text-2xl font-bold">HelpDesk</h1>
 
           <nav className="space-y-2">
-            <button className="w-full rounded-lg bg-white px-4 py-2 text-left font-medium text-slate-950"
+            <button className={`w-full rounded-sm ${windowPanel === 'dashboard'? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
               onClick={() => setWindowPanel('dashboard')}
             >
               Dashboard
             </button>
 
-            <button className="w-full rounded-lg px-4 py-2 text-left text-slate-300 hover:bg-slate-800 hover:text-white"
+            <button className={`w-full rounded-sm ${windowPanel === 'createuser'? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
               onClick={() => setWindowPanel('createuser')}
             >
               Users
             </button>
 
-            <button className="w-full rounded-lg px-4 py-2 text-left text-slate-300 hover:bg-slate-800 hover:text-white"
+            <button className={`w-full rounded-sm ${windowPanel === 'ticket'? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
               onClick={() => setWindowPanel('ticket')}
             >
               Tickets
             </button>
 
-            <button className="w-full rounded-lg px-4 py-2 text-left text-slate-300 hover:bg-slate-800 hover:text-white"
+            <button className={`w-full rounded-sm ${windowPanel === 'update-profile'? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
               onClick={() => setWindowPanel('update-profile')}
             >
               Update Profile
@@ -130,22 +130,22 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
     <div>
       {/* Stats Cards */}
       <div className="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-purple-300 p-5 ">
           <p className="text-sm text-slate-500">Total Users</p>
           <h3 className="mt-2 text-3xl font-bold text-slate-900">{resourceCount?.numberOfUser ?? 'N/A'}</h3>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-red-300 p-5">
           <p className="text-sm text-slate-500">Total Tickets</p>
           <h3 className="mt-2 text-3xl font-bold text-slate-900">{resourceCount?.numberOfTicket ?? 'N/A'}</h3>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-lime-300 p-5">
           <p className="text-sm text-slate-500">Open Tickets</p>
           <h3 className="mt-2 text-3xl font-bold text-slate-900">{resourceCount?.numberOfOpenTicket ?? 'N/A'}</h3>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-indigo-300 p-5">
           <p className="text-sm text-slate-500">Resolved</p>
           <h3 className="mt-2 text-3xl font-bold text-slate-900">{resourceCount?.numberOfResolvedTicket ?? 'N/A'}</h3>
         </div>
@@ -154,19 +154,19 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
       {/* Action Sections */}
       <p className="text-lg font-semibold text-slate-900">Quick Actions</p>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">
             User Management
           </h3>
 
           <div className="space-y-3">
-            <button className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+            <button className="w-full rounded-sm border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-50"
               onClick={() => setWindowPanel && setWindowPanel('createuser')}
             >
               Create New User
             </button>
 
-            <button className="w-full rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-50"
+            <button className="w-full rounded-sm border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-50"
               onClick={() => setWindowPanel && setWindowPanel('viewuser')}
             >
               View All Users
@@ -174,13 +174,13 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">
             Ticket Management
           </h3>
 
           <div className="space-y-3">
-            <button className="w-full rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-800"
+            <button className="w-full rounded-sm bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-800"
               onClick={() => setWindowPanel && setWindowPanel('ticket')}
             >
               View Open Tickets
@@ -206,6 +206,7 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
   const [viewWindow, setViewWindow] = useState<'create' | 'view'>(props)
   const [formError, setFormError] = useState<{ [key: string]: string[] } | null>(null)
   const [errorBackend, setErrorBackend] = useState<string>()
+  const [creatingUser, setCreatingUser] = useState<boolean>(false)
 
   const [allUsers, setAllUsers] = useState<User[] | null>(null)
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -213,8 +214,11 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [viewResetPassword, setViewResetPassword] = useState<boolean>(false)
 
+  const createUserForm = useRef<HTMLFormElement>(null)
+
   const handleCreateUserFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setCreatingUser(true)
     const formData = new FormData(e.currentTarget)
     const userData = {
       name: formData.get('name') as string,
@@ -228,6 +232,7 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
 
     if (!validationResult.success) {
       setFormError(z.flattenError(validationResult.error).fieldErrors)
+      setCreatingUser(false)
       return
     }
 
@@ -247,7 +252,8 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
           alert('User created successfully')
           setFormError(null)
           setErrorBackend('')
-          e.currentTarget.reset()
+          createUserForm.current?.reset()
+          setCreatingUser(false)
         }
 
       }
@@ -255,7 +261,9 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
       if (axios.isAxiosError(error) && error.response) {
         setErrorBackend(error.response.data.message)
         setFormError(null)
+        setCreatingUser(false)
       }
+      setCreatingUser(false)
     }
   }
 
@@ -379,9 +387,9 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
 
   return (
     <div>
-      <div>
-
         <h2 className="text-2xl font-bold text-slate-900">User Management</h2>
+      <div className="my-4 flex rounded-lg bg-transparent gap-1 p-2">
+
         <button className={`inline w-[50%] rounded-lg ${viewWindow === 'create' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'} px-4 py-2 font-medium`}
           onClick={() => setViewWindow('create')}
         >
@@ -394,20 +402,21 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
         </button>
       </div>
       <div>
-        {viewWindow === 'create' && <div>
-          <form className="mt-4 space-y-4" onSubmit={handleCreateUserFormSubmit}>
-            <div className="text-sm text-red-500">{errorBackend}</div>
+        {/* create user */}
+        {viewWindow === 'create' && <div> 
+          <form className="mt-4 space-y-4" onSubmit={handleCreateUserFormSubmit} ref={createUserForm}>
+            {errorBackend && <div className="bg-red-50 border border-red-700 text-sm text-red-700">{errorBackend}</div>}
             <div>
               <label className="block text-sm font-medium text-slate-700">Name</label>
               <span className="text-sm text-red-500">{formError?.name}</span>
-              <input type="text" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              <input type="text" className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3"
                 name="name" />
               <label className="block text-sm font-medium text-slate-700">Email</label>
               <span className="text-sm text-red-500">{formError?.email}</span>
-              <input type="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" name="email" />
+              <input type="email" className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3" name="email" />
               <label className="block text-sm font-medium text-slate-700">Role</label>
               <span className="text-sm text-red-500">{formError?.role}</span>
-              <select className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+              <select className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3"
                 defaultValue={UserRole.EMPLOYEE}
                 name="role"
               >
@@ -417,14 +426,22 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
               <label className="block text-sm font-medium text-slate-700">Password</label>
               <span className="text-sm text-red-500">{formError?.password}</span>
               <input type="password" name="password"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
+                className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3" />
               <label className="block text-sm font-medium text-slate-700">Confirm Password</label>
               <span className="text-sm text-red-500">{formError?.confirmPassword}</span>
               <input type="password" name="confirmPassword"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
+                className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3" />
             </div>
-            <button className="mt-4 rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700">
-              Create User
+            <button className={`mt-4 rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 
+              ${creatingUser ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={creatingUser}>
+              {creatingUser ? 'Creating User...' : 'Create User'}
+            </button>
+            <button type="button" className="mt-4 ml-2 rounded-lg bg-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-400"
+              onClick={() => {
+                setFormError(null)
+                createUserForm.current?.reset()
+              }}>
+              Clear Form
             </button>
           </form>
         </div>}
@@ -433,13 +450,13 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
             <input type="text" 
             placeholder="Search User by Email" 
             onChange={(e) => setSearchTerm(e.target.value.toLocaleLowerCase())} 
-            className="block w-[75%] rounded-md border-2 border-blue-300 outline-blue-500 m-2 px-2 py-1  sm:text-sm"
+            className="block w-[50%] rounded-sm border border-blue-200 outline-blue-500 m-2 px-2 py-1  sm:text-sm"
           />
           </div>
           <div className="my-4 bg-slate-200">{errorBackend} </div>
           <table border={2} className="w-full border-collapse border border-slate-200 overflow-auto py-2" cellPadding={10} >
             <thead>
-              <tr className="bg-slate-50 text-2xl font-bold text-slate-900 text-center">
+              <tr className="bg-slate-50 text-lg font-bold text-slate-900 text-center">
               <td>User ID</td>
               <td>Name</td>
               <td>Email</td>
@@ -487,7 +504,7 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
           </table>
           {(viewResetPassword && selectedUser) && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
-              <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+              <div className="w-full max-w-md rounded-2xl bg-white p-6">
                 <div className="mb-5 flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold text-slate-900">Reset Password</h2>

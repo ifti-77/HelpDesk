@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards, UsePipes, ValidationPipe, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Put, Query, Req, UseGuards, UsePipes, ValidationPipe, } from '@nestjs/common';
 import type { Request } from 'express';
 
 import { AdminService } from './admin.service';
 import { AdminGuard } from './admin.guard';
 import { EmployeeUpdateDto } from '../employee/DTOs/employeeUpdate.dto';
 import { TicketCreateDto } from '../employee/DTOs/ticketCreate.dto';
-import { TicketPriority, TicketStatus } from '../entities/ticket.entity';
+import { TicketEntity, TicketPriority, TicketStatus } from '../entities/ticket.entity';
 import { UserEntity, UserRole } from '../entities/user.entity';
 import { CreateUserDto } from './DTOs/createUser.dto';
 import { TicketCommentEntity } from 'src/entities/ticketComment.entity';
@@ -143,10 +143,10 @@ export class AdminController {
   @Get('tickets/:ticketId')
   @UseGuards(AdminGuard)
   GetTicket(
-    @Param('ticketId') ticketId: string,
+    @Param('ticketId', new ParseUUIDPipe()) ticketId: string,
     @Req() request: AuthRequest,
-  ) {
-    return this.adminService.GetTicket( ticketId);
+  ): Promise<TicketEntity[] | null> {
+    return this.adminService.GetTicket(ticketId)
   }
 
 

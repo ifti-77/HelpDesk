@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 
 import { UserEntity, UserRole } from '../entities/user.entity';
 import {
@@ -158,10 +158,17 @@ export class AgentService {
   async GetTicket(
     agentId: string,
     ticketId: string,
-  ): Promise<TicketEntity | null> {
-    await this.getAgentById(agentId);
+  ): Promise<TicketEntity[] | null> {
 
-    return this.getTicketById(ticketId);
+    return this.ticketRepository.find({
+      where:{
+        id: ticketId,
+        assignedTo: {
+          id: agentId,
+        }
+      },
+      relations:{createdBy: true, assignedTo: true, comments: { user: true }}
+    })
   }
 
   async UpdateTicketStatus(
@@ -279,4 +286,17 @@ export class AgentService {
 
     return true;
   }
+
+  async GetTotalTicketsCount(employeeId: string): Promise<{ total: number, inProgress: number, resolved: number, closed: number }> {
+        const [total, inProgress, resolved, closed] = await Promise.all([
+            this.ticketRepository.count({ where: { createdBy: { id: employeeId } } }),
+            
+            this.ticketRepository.count({ where: { createdBy: { id: employeeId }, status: TicketStatus.IN_PROGRESS } }),
+            this.ticketRepository.count({ where: { createdBy: { id: employeeId }, status: TicketStatus.RESOLVED } }),
+            this.ticketRepository.count({ where: { createdBy: { id: employeeId }, status: TicketStatus.CLOSED } }),
+
+        ]);
+
+        return { total, inProgress, resolved, closed }
+    }
 }

@@ -118,33 +118,38 @@ function UpdateProfile({ user, setUser }: { user: User | undefined, setUser: Rea
 
     return (
         <div>
-            <h1>Update Profile</h1>
-            <div className="text-red-500">{errorBackend}</div>
+            <h1 className="font-medium text-xl text-center">Update Profile</h1>
+            <hr className="border-t border-gray-300 my-3"/>
+            {errorBackend && (
+                <div className="bg-red-100 border border-red-700 text-red-700 px-4 py-3 rounded-sm">
+                    {errorBackend}
+                </div>
+            )}
             <form onSubmit={handleUpdateProfile} className="flex flex-col gap-4">
                 <div>
-                    <label htmlFor="name">Name</label> <span className="text-red-500">{errorFrontend?.name}</span>
+                    <label htmlFor="name" className="block text-md font-medium text-gray-700">Name</label> <span className="text-red-500">{errorFrontend?.name}</span>
                     <input type="text" id="name" name="name" value={name} onChange={(e) => setName(e.currentTarget.value.trimStart())} 
-                    className="border border-gray-600 outline-blue-800 px-4 py-1.5 mx-1.5"/>
+                    className="border border-gray-600 outline-blue-800 px-4 py-1.5 rounded-xs"/>
                 </div>
                 <div>
 
-                    <label htmlFor="email">Email</label><span className="text-red-500">{errorFrontend?.email}</span>
+                    <label htmlFor="email" className="block text-md font-medium text-gray-700">Email</label><span className="text-red-500">{errorFrontend?.email}</span>
                     <input type="email" id="email" name="email" value={email} onChange={(e) => setEmail(e.currentTarget.value.trim())} 
-                    className="border border-gray-600 outline-blue-800 px-4 py-1.5 mx-1.5"/>
+                    className="border border-gray-600 outline-blue-800 px-4 py-1.5 rounded-xs"/>
                 </div>
                 <div>
 
-                    <label htmlFor="password">Password</label><span className="text-red-500">{errorFrontend?.password}</span>
+                    <label htmlFor="password" className="block text-md font-medium text-gray-700">Password</label><span className="text-red-500">{errorFrontend?.password}</span>
                     <input type="password" id="password" name="password"
                         placeholder="Leave empty if no change of password" value={password} onChange={(e) => setPassword(e.currentTarget.value.trim())} 
-                        className="border border-gray-600 outline-blue-800 px-4 py-1.5 mx-1.5"/>
+                        className="border border-gray-600 outline-blue-800 px-4 py-1.5 rounded-xs"/>
                 </div>
                 <div>
 
-                    <label htmlFor="confirmPassword">Confirm Password</label><span className="text-red-500">{errorFrontend?.confirmPassword}</span>
+                    <label htmlFor="confirmPassword" className="block text-md font-medium text-gray-700">Confirm Password</label><span className="text-red-500">{errorFrontend?.confirmPassword}</span>
                     <input type="password" id="confirmPassword" name="confirmPassword"
                         placeholder="Leave empty if no change of password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.currentTarget.value.trim())} 
-                        className="border border-gray-600 outline-blue-800 px-4 py-1.5 mx-1.5"/>
+                        className="border border-gray-600 outline-blue-800 px-4 py-1.5 rounded-xs"/>
                 </div>
                 <button type="submit" disabled={makeRequest}
                 className={`w-[30%] bg-blue-700 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded ${makeRequest ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}>

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Patch, UseGuards, UsePipes, ValidationPipe, Req, Delete, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, Patch, UseGuards, UsePipes, ValidationPipe, Req, Delete, Query, ParseUUIDPipe } from "@nestjs/common";
 import { EmployeeService } from "./employee.service";
 import { UserEntity } from "../entities/user.entity";
 import { EmployeeUpdateDto } from "./DTOs/employeeUpdate.dto";
@@ -9,8 +9,8 @@ import type { Request } from "express";
 import { TicketCommentEntity } from "src/entities/ticketComment.entity";
 import { TicketUpdateDto } from "./DTOs/ticketUpdate.dto";
 
-interface AuthRequest extends Request {
-    user: { id: string };
+export interface AuthRequest extends Request {
+    user: { id: string }
 }
 
 
@@ -58,7 +58,7 @@ export class EmployeeController {
     @Get("/tickets/:ticketId")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
-    GetTicket(@Param('ticketId') ticketId: string, @Req() request: AuthRequest): Promise<TicketEntity | null> {
+    GetTicket(@Param('ticketId', new ParseUUIDPipe()) ticketId: string, @Req() request: AuthRequest): Promise<TicketEntity[] | null> {
         return this.employeeService.GetTicket(request.user.id ,ticketId);
     }
 
@@ -103,8 +103,8 @@ export class EmployeeController {
       @Patch('tickets/comments/:ticketId/:commentId')
       @UseGuards(EmployeeGuard)
       EditComment(
-        @Param('ticketId') ticketId: string,
-        @Param('commentId') commentId: string,
+        @Param('ticketId', new ParseUUIDPipe()) ticketId: string,
+        @Param('commentId', new ParseUUIDPipe()) commentId: string,
         @Body('comment') newComment: string,
         @Req() request: AuthRequest,
       ): Promise<TicketCommentEntity | null> {
@@ -116,5 +116,11 @@ export class EmployeeController {
     @Delete("/tickets/comments/:ticketId/:commentId")
     DeleteComment(@Param('ticketId') ticketId: string, @Param('commentId') commentId: string,  @Req() request: AuthRequest): Promise<boolean> {
         return this.employeeService.DeleteComment(request.user.id ,ticketId, commentId);
+    }
+
+    @Get('resources/totalcounts')
+    @UseGuards(EmployeeGuard)
+    GetTotalTicketsCount(@Req() request: AuthRequest): Promise<{ total: number, open: number, inProgress: number, resolved: number, closed: number }> {
+        return this.employeeService.GetTotalTicketsCount(request.user.id);
     }
 }

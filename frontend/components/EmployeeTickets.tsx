@@ -6,7 +6,8 @@ import axios from 'axios'
 import ViewTicketDetails from './ViewTicketDetails'
 import CreateTicket from './CreateTicket'
 import UpdateTicket from './UpdateTicket'
-function EmployeeTickets({employeeId}:{employeeId:string}) {
+import SearchTicket from './SearchTicket'
+function EmployeeTickets({ employeeId }: { employeeId: string }) {
     const [viewWindow, setViewWindow] = React.useState<'create-tickets' | 'view-tickets' | TicketStatus.CLOSED>('create-tickets')
     const [tickets, setTickets] = React.useState<Ticket[] | null>([{
         id: '1', title: 'Sample Ticket',
@@ -66,53 +67,76 @@ function EmployeeTickets({employeeId}:{employeeId:string}) {
 
     return (
         <div>
-            <div>
+            <h1 className="text-3xl font-bold text-slate-900">Manage Tickets</h1>
+            <div className="flex justify-start gap-1 w-full mt-1">
+                <div className="flex flex-col items-center justify-start gap-1 w-full">
 
-                <h1 className="text-3xl font-bold text-slate-900">Manage Tickets</h1>
-                <button className={`inline w-[50%] rounded-lg ${viewWindow === 'create-tickets' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'} px-4 py-2 font-medium`}
-                    onClick={() => setViewWindow('create-tickets')}
-                >
-                    Create Tickets
-                </button>
-                <button className={`inline w-[50%] rounded-lg ${viewWindow === 'view-tickets' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'} px-4 py-2 font-medium`}
-                    onClick={() => setViewWindow('view-tickets')}
-                >
-                    View Tickets
-                </button>
-                <button className={`inline w-[50%] rounded-lg ${viewWindow === TicketStatus.CLOSED ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'} px-4 py-2 font-medium`}
-                    onClick={() => setViewWindow(TicketStatus.CLOSED)}
-                >
-                    Closed Tickets
-                </button>
+                    <button className={`inline w-full rounded-sm ${viewWindow === 'create-tickets' ? 'bg-indigo-900 text-white hover:bg-indigo-950' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'} px-4 py-2 font-medium`}
+                        onClick={() => setViewWindow('create-tickets')}
+                    >
+                        Create Tickets
+                    </button>
+                    <button className={`inline w-full rounded-sm ${viewWindow === 'view-tickets' ? 'bg-indigo-900 text-white hover:bg-indigo-950' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'} px-4 py-2 font-medium`}
+                        onClick={() => setViewWindow('view-tickets')}
+                    >
+                        View Tickets
+                    </button>
+                </div>
+                <div className="flex flex-col items-center justify-start gap-1 w-full">
+
+                    <button className={`inline w-full rounded-sm ${viewWindow === TicketStatus.CLOSED ? 'bg-indigo-900 text-white hover:bg-indigo-950' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'} px-4 py-2 font-medium`}
+                        onClick={() => setViewWindow(TicketStatus.CLOSED)}
+                    >
+                        Closed Tickets
+                    </button>
+                    <SearchTicket userRole={UserRole.EMPLOYEE} setTickets={setTickets} />
+                </div>
             </div>
             <div>
                 {viewWindow === 'create-tickets' ? (
-                    <div className="my-4 space-y-4 flex-1 rounded-lg bg-slate-100 p-4">
+                    <div className="my-4 space-y-4 flex-1 rounded-sm bg-gray-100 p-4">
                         <CreateTicket />
                     </div>
                 ) : (
                     <div>
                         {Array.isArray(tickets) && tickets.length > 0 ? (
-                            <div className="my-4 space-y-4 flex-1 rounded-lg bg-slate-100 p-4">
+                            <div className="my-4 space-y-4 flex flex-wrap gap-2 rounded-sm bg-slate-100 p-4 overflow-auto">
                                 {tickets?.map((ticket) => (
-                            <div key={ticket.id}>
-                                <h2>{ticket.title}</h2>
-                                <p><span>{ticket.priority}</span></p>
-                                <p>{ticket.description}</p>
-                                <button onClick={() => {
-                                    setSelectedTicket(ticket);
-                                    setViewTicketDetails(true);
-                                }} className="text-blue-600 hover:underline">
-                                    View Details
-                                </button>
-                                {ticket.status === TicketStatus.OPEN && <button onClick={() => {
-                                    setSelectedTicket(ticket);
-                                    setUpdateTicketView(true);
-                                }} className="text-orange-600 hover:underline">Update</button>}
-                            </div>
-                        ))}
-                    </div>) : (<div className="my-4 space-y-4 rounded-lg bg-slate-100 p-4"> <p>No {viewWindow} Ticket Available</p></div>)}
-                </div>)}
+                                    <div key={ticket.id} className="rounded-sm bg-white p-2 border border-slate-400 min-w-62.5 h-48">
+                                        <h2 className='font-medium italic text-indigo-950'>{ticket.title}</h2>
+                                        <p className='mt-2 text-sm text-slate-800'>
+                                            <span className='rounded-xs px-1 bg-purple-100 text-sm text-slate-700'>Priority:</span>
+                                            {' '+ticket.priority+' '}<span className=' border border-purple-400 rounded-sm ml-4 px-1 bg-transparent text-sm text-slate-700'>{ticket.status}</span>
+                                        </p>
+                                        <p className='mt-2 text-sm text-slate-800'>
+                                            <span className='rounded-xs px-1 bg-mauve-100 text-sm text-slate-700'>Category:</span>
+                                            {' '+ticket.category}
+                                        </p>
+                                        <p className='mt-2 text-sm text-slate-800'>
+                                            <span className='rounded-xs px-1 bg-mauve-100 text-sm text-slate-700'>Created:</span>
+                                            {' '+new Date(ticket.createdAt).toLocaleDateString()}
+                                        </p>
+                                        <p className='mt-2 text-sm text-slate-800'>
+                                            <span className='rounded-xs px-1 bg-mauve-100 text-sm text-slate-700'>Updated:</span>
+                                            {new Date(ticket.updatedAt).toLocaleDateString() ?? 'Not yet'}
+                                        </p>
+
+                                        <button onClick={() => {
+                                            setSelectedTicket(ticket);
+                                            setViewTicketDetails(true);
+                                        }} className="mt-2 text-blue-600 hover:underline mx-1 cursor-pointer">
+                                            View Details
+                                        </button>
+                                        {ticket.status === TicketStatus.OPEN && <button onClick={() => {
+                                            setSelectedTicket(ticket);
+                                            setUpdateTicketView(true);
+                                        }} className="mt-2 text-orange-600 hover:underline mx-1 cursor-pointer">
+                                            Update
+                                        </button>}
+                                    </div>
+                                ))}
+                            </div>) : (<div className="my-4 space-y-4 rounded-sm bg-slate-100 p-4"> <p>No {viewWindow} Ticket Available</p></div>)}
+                    </div>)}
             </div>
 
             {(viewTicketDetails && selectedTicket) && (<ViewTicketDetails userRole={UserRole.EMPLOYEE} userId={employeeId}

@@ -82,25 +82,25 @@ function CreateTicket() {
         <div>
             <h1 className="text-2xl font-bold mb-4">Create a New Ticket</h1>
             {errorBackend && (
-                <div className="mb-4 p-4 bg-blue-100 border border-red-700 text-red-700 rounded">
+                <div className="mb-4 p-4 bg-red-50 border border-red-700 text-red-700 rounded-sm">
                     {errorBackend}
                 </div>
             )}
             <form className="space-y-4" onSubmit={handleSubmitTicket}>
                 <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
+                    <label htmlFor="title" className="block text-md font-medium text-gray-700">Title</label>
                     <span className="text-red-500">{errorFrontend?.title && errorFrontend.title.join(', ')}</span>
-                    <input type="text" id="title" name="title" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Enter ticket title" />
+                    <input type="text" id="title" name="title" className="mt-1 py-1.5 px-2 block w-full rounded-sm border border-gray-300 outline-indigo-300 sm:text-sm" placeholder="Enter ticket title" />
                 </div>
                 <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
+                    <label htmlFor="description" className="block text-md font-medium text-gray-700">Description</label>
                     <span className="text-red-500">{errorFrontend?.description && errorFrontend.description.join(', ')}</span>
-                    <textarea id="description" name="description" rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Describe the issue in detail"></textarea>
+                    <textarea id="description" name="description" rows={4} className="mt-1 py-1.5 px-2 block w-full rounded-sm border border-gray-300 outline-indigo-300 resize-none sm:text-sm" placeholder="Describe the issue in detail"></textarea>
                 </div>
                 <div>
-                    <label htmlFor="priority" className="block text-sm font-medium text-gray-700">Priority</label>
+                    <label htmlFor="priority" className="block text-md font-medium text-gray-700">Priority</label>
                     <span className="text-red-500">{errorFrontend?.priority && errorFrontend.priority.join(', ')}</span>
-                    <select id="priority" name="priority" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                    <select id="priority" name="priority" className="mt-1 py-1.5 px-2 block w-full rounded-sm border border-gray-300 outline-indigo-300 sm:text-sm">
                         <option value="" hidden>Select priority</option>
                         <option value={TicketPriority.LOW}>{TicketPriority.LOW}</option>
                         <option value={TicketPriority.MEDIUM}>{TicketPriority.MEDIUM}</option>
@@ -109,9 +109,9 @@ function CreateTicket() {
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+                    <label htmlFor="category" className="block text-md font-medium text-gray-700">Category</label>
                     <span className="text-red-500">{errorFrontend?.category && errorFrontend.category.join(', ')}</span>
-                    <select id="category" name="category" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                    <select id="category" name="category" className="mt-1 py-1.5 px-2 block w-full rounded-sm border border-gray-300 outline-indigo-300 sm:text-sm">
                         <option value="" hidden>Select category</option>
                         <option value={Categories.Account}>{Categories.Account}</option>
                         <option value={Categories.Asset}>{Categories.Asset}</option>
@@ -121,7 +121,7 @@ function CreateTicket() {
                         <option value={Categories.Software}>{Categories.Software}</option>
                     </select>
                 </div>
-                <button type='submit' className='bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' disabled={submitting}>
+                <button type='submit' className='bg-blue-500 text-white py-2 px-4 rounded-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2' disabled={submitting}>
                     {submitting ? 'Submitting...' : 'Submit Ticket'}
                 </button>
             </form>

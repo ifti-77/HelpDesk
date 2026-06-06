@@ -315,9 +315,13 @@ export class AdminService {
 
   async GetTicket(
     ticketId: string,
-  ): Promise<TicketEntity | null> {
+  ): Promise<TicketEntity[] | null> {
 
-    return this.getTicketById(ticketId);
+    return this.ticketRepository.find({
+      where: {
+        id: ticketId,},
+        relations:{createdBy: true, assignedTo: true, comments: { user: true }}
+      })
   }
 
 
