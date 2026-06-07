@@ -460,13 +460,15 @@ export class AdminService {
     numberOfUser: number,
     numberOfOpenTicket: number,
     numberOfResolvedTicket: number,
+    numberOfClosedTicket: number,
     numberOfTicket: number
   }> {
     const numberOfUser = await this.userRepository.count({ where: { id: Not(adminId) } })
     const numberOfOpenTicket = await this.ticketRepository.count({ where: { status: TicketStatus.OPEN } })
     const numberOfResolvedTicket = await this.ticketRepository.count({ where: { status: TicketStatus.RESOLVED } })
+    const numberOfClosedTicket = await this.ticketRepository.count({ where: { status: TicketStatus.CLOSED } })
     const numberOfTicket = await this.ticketRepository.count()
 
-    return { numberOfUser, numberOfOpenTicket, numberOfResolvedTicket, numberOfTicket }
+    return { numberOfUser, numberOfOpenTicket, numberOfResolvedTicket, numberOfClosedTicket, numberOfTicket }
   }
 }

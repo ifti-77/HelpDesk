@@ -134,7 +134,7 @@ function DashBoardComponent() {
 
       <div className="rounded-sm bg-green-500 p-6 text-white">
         <p className="text-sm font-medium">Resolved</p>
-        <p className="mt-2 text-3xl font-bold">{(ticketCounts?.resolved && ticketCounts?.closed) ? (ticketCounts?.resolved + ticketCounts?.closed) : 'N/A'}</p>
+        <p className="mt-2 text-3xl font-bold">{(ticketCounts?.resolved != undefined && ticketCounts?.closed != undefined) ? (ticketCounts?.resolved + ticketCounts?.closed) : 'N/A'}</p>
       </div>
 
 

@@ -103,8 +103,9 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
     numberOfUser: number,
     numberOfOpenTicket: number,
     numberOfResolvedTicket: number,
+    numberOfClosedTicket: number,
     numberOfTicket: number
-  } | null>()
+  }>()
 
   useEffect(() => {
     async function GetAllCounts() {
@@ -118,7 +119,7 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
-          setResourceCount(null)
+          alert(error.response.data.message || 'Failed to fetch resource counts')
         }
       }
     }
@@ -130,31 +131,34 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
     <div>
       {/* Stats Cards */}
       <div className="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-purple-300 p-5 ">
+        <div className="rounded-sm border border-slate-200 bg-purple-300 p-5 ">
           <p className="text-sm text-slate-500">Total Users</p>
           <h3 className="mt-2 text-3xl font-bold text-slate-900">{resourceCount?.numberOfUser ?? 'N/A'}</h3>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-red-300 p-5">
+        <div className="rounded-sm border border-slate-200 bg-red-300 p-5">
           <p className="text-sm text-slate-500">Total Tickets</p>
           <h3 className="mt-2 text-3xl font-bold text-slate-900">{resourceCount?.numberOfTicket ?? 'N/A'}</h3>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-lime-300 p-5">
+        <div className="rounded-sm border border-slate-200 bg-lime-300 p-5">
           <p className="text-sm text-slate-500">Open Tickets</p>
           <h3 className="mt-2 text-3xl font-bold text-slate-900">{resourceCount?.numberOfOpenTicket ?? 'N/A'}</h3>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-indigo-300 p-5">
+        <div className="rounded-sm border border-slate-200 bg-indigo-300 p-5">
           <p className="text-sm text-slate-500">Resolved</p>
-          <h3 className="mt-2 text-3xl font-bold text-slate-900">{resourceCount?.numberOfResolvedTicket ?? 'N/A'}</h3>
+          <h3 className="mt-2 text-3xl font-bold text-slate-900">
+            {(resourceCount?.numberOfClosedTicket!=undefined && 
+            resourceCount?.numberOfResolvedTicket !=undefined)?(resourceCount?.numberOfClosedTicket +resourceCount?.numberOfResolvedTicket): 'N/A'}
+            </h3>
         </div>
       </div>
 
       {/* Action Sections */}
       <p className="text-lg font-semibold text-slate-900">Quick Actions</p>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="rounded-sm border border-slate-200 bg-white p-6">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">
             User Management
           </h3>
@@ -174,7 +178,7 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="rounded-sm border border-slate-200 bg-white p-6">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">
             Ticket Management
           </h3>

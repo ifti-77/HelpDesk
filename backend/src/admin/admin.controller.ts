@@ -211,6 +211,7 @@ export class AdminController {
     numberOfUser: number,
     numberOfOpenTicket: number,
     numberOfResolvedTicket: number,
+    numberOfClosedTicket: number,
     numberOfTicket: number
   }> {
     return this.adminService.GetAllResourceCounts(request.user.id)
