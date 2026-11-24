@@ -1,7 +1,8 @@
-import { BeforeInsert, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { TicketEntity } from "./ticket.entity";
 import { TicketCommentEntity } from "./ticketComment.entity";
 import * as bcrypt from 'bcrypt';
+import { OrganizationEntity } from "./organization.entity";
 
 export enum UserRole {
   EMPLOYEE = 'EMPLOYEE',
@@ -10,45 +11,51 @@ export enum UserRole {
 }
 
 @Entity('users')
-export class UserEntity{
+export class UserEntity {
 
-    @PrimaryGeneratedColumn('uuid')
-    id!: string;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
-    @Column({ type: 'varchar', length: 100 })
-    name!: string;
+  @Column({ type: 'varchar', length: 100 })
+  name!: string;
 
-    @Column({ type: 'varchar', length: 150, unique: true })
-    email!: string;
+  @Column({ type: 'varchar', length: 150, unique: true })
+  email!: string;
 
-    @Column({ type: 'text' })
-    passwordHash!: string;
+  @Column({ type: 'text' })
+  passwordHash!: string;
 
-    @Column({ type: 'enum', enum: UserRole, default: 'EMPLOYEE' })
-    role!: UserRole;
+  @Column({ type: 'enum', enum: UserRole, default: 'EMPLOYEE' })
+  role!: UserRole;
 
-    @Column({ type: 'boolean', default: true })
-    isActive!: boolean;
+  @Column({ type: 'boolean', default: true })
+  isActive!: boolean;
 
-    @OneToMany(() => TicketEntity, ticket => ticket.createdBy)
-    createdTickets!: TicketEntity[];
-    @OneToMany(() => TicketEntity, ticket => ticket.assignedTo)
-    assignedTickets!: TicketEntity[];
+  @ManyToOne(() => OrganizationEntity, (organization) => organization.organizationEmployees, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'organizationId' })
+  organization!: OrganizationEntity
 
-    @OneToMany(() => TicketCommentEntity, comment => comment.user)
-    comments!: TicketCommentEntity[];
+  @OneToMany(() => TicketEntity, ticket => ticket.createdBy)
+  createdTickets!: TicketEntity[];
+  @OneToMany(() => TicketEntity, ticket => ticket.assignedTo)
+  assignedTickets!: TicketEntity[];
 
-    @CreateDateColumn()
-    createdAt!: Date;
+  @OneToMany(() => TicketCommentEntity, comment => comment.user)
+  comments!: TicketCommentEntity[];
 
-    @UpdateDateColumn()
-    updatedAt!: Date;
+  @CreateDateColumn()
+  createdAt!: Date;
 
-    @BeforeInsert()
-    async hashPassword() {
-        if (this.passwordHash) {
-            const salt = await bcrypt.genSalt(10);
-            this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
-        }
-      }
+  @UpdateDateColumn()
+  updatedAt!: Date;
+
+  @BeforeInsert()
+  async hashPassword() {
+    if (this.passwordHash) {
+      const salt = await bcrypt.genSalt(10);
+      this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+    }
+  }
 }

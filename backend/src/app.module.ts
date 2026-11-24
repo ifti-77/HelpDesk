@@ -5,10 +5,12 @@ import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { AgentModule } from './agent/agent.module';
 import { ConfigModule} from '@nestjs/config'
+import { OrganizationModule } from './organization/organization.module';
 
 
 @Module({
-  imports: [EmployeeModule,AdminModule, AgentModule, AuthModule, TypeOrmModule.forRoot({
+  imports: [EmployeeModule,AdminModule, AgentModule, AuthModule, OrganizationModule,
+     TypeOrmModule.forRoot({
     type: 'postgres',
     host: 'localhost',
     port: 5432,
