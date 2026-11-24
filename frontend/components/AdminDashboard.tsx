@@ -8,6 +8,9 @@ import z, { input } from "zod"
 import AdminTickets from "./AdminTickets"
 import UpdateProfile from "./UpdateProfile"
 import Logout from "./Logout"
+import { Organization } from "@/CustomTypes/OrganizationType"
+
+let ORGANIZATION: Organization | null = null
 
 function AdminDashboard() {
 
@@ -25,6 +28,7 @@ function AdminDashboard() {
         if (response.status == 200) {
           const data = await response.data
           setAdmin(data)
+          ORGANIZATION = data.organization
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
@@ -39,28 +43,28 @@ function AdminDashboard() {
     <main className="min-h-screen bg-slate-100 ">
       <div className="flex min-h-[calc(100vh)] overflow-hidden bg-white">
         <aside className="w-64 min-h-[calc(100vh)] border-r border-slate-200 bg-slate-950 p-6 text-white">
-          <h1 className="mb-8 text-2xl font-bold">HelpDesk</h1>
+          <h1 className="mb-8 text-2xl font-bold">{ORGANIZATION?.organizationName} </h1>
 
           <nav className="space-y-2">
-            <button className={`w-full rounded-sm ${windowPanel === 'dashboard'? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
+            <button className={`w-full rounded-sm ${windowPanel === 'dashboard' ? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
               onClick={() => setWindowPanel('dashboard')}
             >
               Dashboard
             </button>
 
-            <button className={`w-full rounded-sm ${windowPanel === 'createuser'? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
+            <button className={`w-full rounded-sm ${windowPanel === 'createuser' ? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
               onClick={() => setWindowPanel('createuser')}
             >
               Users
             </button>
 
-            <button className={`w-full rounded-sm ${windowPanel === 'ticket'? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
+            <button className={`w-full rounded-sm ${windowPanel === 'ticket' ? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
               onClick={() => setWindowPanel('ticket')}
             >
               Tickets
             </button>
 
-            <button className={`w-full rounded-sm ${windowPanel === 'update-profile'? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
+            <button className={`w-full rounded-sm ${windowPanel === 'update-profile' ? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}
               onClick={() => setWindowPanel('update-profile')}
             >
               Update Profile
@@ -86,8 +90,8 @@ function AdminDashboard() {
             {windowPanel === 'dashboard' && <DashBoardComponent setWindowPanel={setWindowPanel} />}
             {windowPanel === 'createuser' && <ManageUsers props="create" />}
             {windowPanel === 'viewuser' && <ManageUsers props="view" />}
-            { windowPanel === 'ticket' && <AdminTickets  adminId={admin?.id ?? ''}/> }
-            { windowPanel === 'update-profile' && <UpdateProfile user={admin} setUser={setAdmin} /> }
+            {windowPanel === 'ticket' && <AdminTickets adminId={admin?.id ?? ''} />}
+            {windowPanel === 'update-profile' && <UpdateProfile user={admin} setUser={setAdmin} />}
           </Suspense>
         </section>
 
@@ -149,9 +153,9 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
         <div className="rounded-sm border border-slate-200 bg-indigo-300 p-5">
           <p className="text-sm text-slate-500">Resolved</p>
           <h3 className="mt-2 text-3xl font-bold text-slate-900">
-            {(resourceCount?.numberOfClosedTicket!=undefined && 
-            resourceCount?.numberOfResolvedTicket !=undefined)?(resourceCount?.numberOfClosedTicket +resourceCount?.numberOfResolvedTicket): 'N/A'}
-            </h3>
+            {(resourceCount?.numberOfClosedTicket != undefined &&
+              resourceCount?.numberOfResolvedTicket != undefined) ? (resourceCount?.numberOfClosedTicket + resourceCount?.numberOfResolvedTicket) : 'N/A'}
+          </h3>
         </div>
       </div>
 
@@ -299,14 +303,14 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncherValue(searchTerm)
-    },500)
+    }, 500)
 
-    return ()=>{
+    return () => {
       clearTimeout(handler)
     }
   }, [searchTerm])
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchSearchedUser = async () => {
       try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${debouncherValue}`, {
@@ -327,7 +331,7 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
     }
 
     fetchSearchedUser()
-  },[debouncherValue])
+  }, [debouncherValue])
 
   const UpdateUserRole = async (role: UserRole.AGENT | UserRole.EMPLOYEE, userId: string) => {
 
@@ -356,7 +360,7 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
 
     try {
       if (status === 'activate') {
-        const response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/status/${userId}`,{}, {
+        const response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/status/${userId}`, {}, {
           withCredentials: true
         })
         console.log(response.status)
@@ -364,10 +368,10 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
           const data: User | null = await response.data
           if (data != null) {
             const updatedUserList: User[] | null = allUsers && allUsers.map((user) => {
-                return user.id === data.id ? { ...user, isActive: data.isActive } : user
-              })
-              setAllUsers(updatedUserList)
-              setErrorBackend('')
+              return user.id === data.id ? { ...user, isActive: data.isActive } : user
+            })
+            setAllUsers(updatedUserList)
+            setErrorBackend('')
           }
         }
       }
@@ -391,7 +395,7 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
 
   return (
     <div>
-        <h2 className="text-2xl font-bold text-slate-900">User Management</h2>
+      <h2 className="text-2xl font-bold text-slate-900">User Management</h2>
       <div className="my-4 flex rounded-lg bg-transparent gap-1 p-2">
 
         <button className={`inline w-[50%] rounded-lg ${viewWindow === 'create' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border border-slate-300 text-slate-700 hover:bg-slate-50'} px-4 py-2 font-medium`}
@@ -407,7 +411,7 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
       </div>
       <div>
         {/* create user */}
-        {viewWindow === 'create' && <div> 
+        {viewWindow === 'create' && <div>
           <form className="mt-4 space-y-4" onSubmit={handleCreateUserFormSubmit} ref={createUserForm}>
             {errorBackend && <div className="bg-red-50 border border-red-700 text-sm text-red-700">{errorBackend}</div>}
             <div>
@@ -417,7 +421,10 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
                 name="name" />
               <label className="block text-sm font-medium text-slate-700">Email</label>
               <span className="text-sm text-red-500">{formError?.email}</span>
-              <input type="email" className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3" name="email" />
+              <div>
+                <input type="email" className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3" name="email" />
+                <input type='text' disabled value={`@${ORGANIZATION?.organizationDomain}`} className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3" />
+              </div>
               <label className="block text-sm font-medium text-slate-700">Role</label>
               <span className="text-sm text-red-500">{formError?.role}</span>
               <select className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3"
@@ -451,22 +458,22 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
         </div>}
         {viewWindow === 'view' && <div>
           <div>
-            <input type="text" 
-            placeholder="Search User by Email" 
-            onChange={(e) => setSearchTerm(e.target.value.toLocaleLowerCase())} 
-            className="block w-[50%] rounded-sm border border-blue-200 outline-blue-500 m-2 px-2 py-1  sm:text-sm"
-          />
+            <input type="text"
+              placeholder="Search User by Email"
+              onChange={(e) => setSearchTerm(e.target.value.toLocaleLowerCase())}
+              className="block w-[50%] rounded-sm border border-blue-200 outline-blue-500 m-2 px-2 py-1  sm:text-sm"
+            />
           </div>
           <div className="my-4 bg-slate-200">{errorBackend} </div>
           <table border={2} className="w-full border-collapse border border-slate-200 overflow-auto py-2" cellPadding={10} >
             <thead>
               <tr className="bg-slate-50 text-lg font-bold text-slate-900 text-center">
-              <td>User ID</td>
-              <td>Name</td>
-              <td>Email</td>
-              <td>Role</td>
-              <td>Status</td>
-              <td colSpan={3}>Actions</td>
+                <td>User ID</td>
+                <td>Name</td>
+                <td>Email</td>
+                <td>Role</td>
+                <td>Status</td>
+                <td colSpan={3}>Actions</td>
               </tr>
             </thead>
             <tbody>
@@ -489,12 +496,12 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
                   </td>
                   <td className="p-3.5">
                     <button className="m-1 rounded-lg bg-yellow-500 px-2 py-1 text-sm font-medium text-white hover:bg-yellow-600"
-                    onClick={() => {
-                      setSelectedUser(user)
-                      setViewResetPassword(true)
-                    }}>Reset Password</button>
+                      onClick={() => {
+                        setSelectedUser(user)
+                        setViewResetPassword(true)
+                      }}>Reset Password</button>
                     {user.role !== UserRole.ADMIN && <button
-                    className="m-1 rounded-lg bg-blue-500 px-2 py-1 text-sm font-medium text-white hover:bg-blue-600"
+                      className="m-1 rounded-lg bg-blue-500 px-2 py-1 text-sm font-medium text-white hover:bg-blue-600"
                       onClick={() => UpdateUserRole(user.role === UserRole.EMPLOYEE ? UserRole.AGENT : UserRole.EMPLOYEE, user.id)}>
                       Change Role To: {user.role === UserRole.EMPLOYEE ? UserRole.AGENT : UserRole.EMPLOYEE}
                     </button>}

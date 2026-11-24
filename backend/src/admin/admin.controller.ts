@@ -11,7 +11,7 @@ import { CreateUserDto } from './DTOs/createUser.dto';
 import { TicketCommentEntity } from 'src/entities/ticketComment.entity';
 
 interface AuthRequest extends Request {
-  user: { id: string; role: string };
+  user: { id: string; role: string; organizationId: string };
 }
 
 @Controller('admin')
@@ -50,7 +50,7 @@ export class AdminController {
   @UseGuards(AdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   CreateUser(@Body() userData: CreateUserDto, @Req() request: AuthRequest) {
-    return this.adminService.CreateUser(request.user.id, userData);
+    return this.adminService.CreateUser(request.user.id, request.user.organizationId, userData);
   }
 
   @Get('users')

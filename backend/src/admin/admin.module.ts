@@ -9,6 +9,7 @@ import { AuthModule } from '../auth/auth.module';
 import { UserEntity } from '../entities/user.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketCommentEntity } from '../entities/ticketComment.entity';
+import { OrganizationEntity } from 'src/entities/organization.entity';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TicketCommentEntity } from '../entities/ticketComment.entity';
       UserEntity,
       TicketEntity,
       TicketCommentEntity,
+      OrganizationEntity,
     ]),
     AuthModule,
   ],

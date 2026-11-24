@@ -10,12 +10,16 @@ import { TicketCommentEntity } from '../entities/ticketComment.entity';
 import { EmployeeUpdateDto } from '../employee/DTOs/employeeUpdate.dto';
 import { TicketCreateDto } from '../employee/DTOs/ticketCreate.dto';
 import { CreateUserDto } from './DTOs/createUser.dto';
+import { OrganizationEntity } from 'src/entities/organization.entity';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    
+    @InjectRepository(OrganizationEntity)
+    private readonly organizationRepository: Repository<OrganizationEntity>,
 
     @InjectRepository(TicketEntity)
     private readonly ticketRepository: Repository<TicketEntity>,
@@ -77,7 +81,13 @@ export class AdminService {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        organization: {
+          id: true,
+          organizationName: true,
+          organizationDomain: true,
+        }
       },
+      relations: { organization: true },
     });
   }
 
@@ -131,26 +141,39 @@ export class AdminService {
     return savedAdmin;
   }
 
-  async CreateUser(adminId: string, userData: CreateUserDto): Promise<UserEntity | null> {
+  async CreateUser(adminId: string, organizationId: string, userData: CreateUserDto): Promise<UserEntity | null> {
 
     const existingUser = await this.userRepository.findOne({
       where: {
         email: userData.email,
       },
-    });
+    })
 
     if (existingUser) {
       throw new BadRequestException('Email already exists');
     }
+    
+    const organization = await this.organizationRepository.findOne({
+      where: {
+        id: organizationId,
+      },
+    })
 
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    if (organization === null) {
+      throw new BadRequestException('Organization not found');
+    }
+
+    const hashedPassword = await bcrypt.hash(userData.password, 10)
+
+    const userOrganizationEmail = `${userData.email.trim().toLowerCase()}@${organization.organizationDomain.trim().toLowerCase()}`
 
     const user = this.userRepository.create({
       name: userData.name,
       email: userData.email,
       passwordHash: hashedPassword,
       role: userData.role ?? UserRole.EMPLOYEE,
-    });
+      organization: organization,
+    })
 
     const savedUser = await this.userRepository.save(user);
 

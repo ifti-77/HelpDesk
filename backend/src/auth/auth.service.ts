@@ -17,7 +17,7 @@ export class AuthService {
     async Login(loginDto: LoginDTO, res: Response): Promise<{ message: string } | null> {
         try {
 
-            const user = await this.userRepository.findOne({ where: { email: loginDto.email } })
+            const user = await this.userRepository.findOne({ where: { email: loginDto.email }, relations: {organization: true} })
             if (!user) {
                 throw new BadRequestException('No user with this email found')
             }
@@ -32,7 +32,7 @@ export class AuthService {
                 throw new BadRequestException('You Account has been Deactivated, please contact Admin')
             }
 
-            const payload = { id: user.id, role: user.role }
+            const payload = { id: user.id, role: user.role, organzationId: user.organization.id }
             const accessToken = await this.jwtService.signAsync(payload);
 
             res.cookie('access_token', accessToken, {
@@ -52,7 +52,7 @@ export class AuthService {
         }
     }
 
-    async GetCurrentUser(req: Request): Promise<{ id: string, role: UserRole } | null> {
+    async GetCurrentUser(req: Request): Promise<{ id: string, role: UserRole, organizationId: string } | null> {
 
         try {
 
@@ -66,7 +66,7 @@ export class AuthService {
             if (!payload?.id || !payload?.role) {
                 throw new BadRequestException('Invalid token payload');
             }
-            return { id: payload.id, role: payload.role }
+            return { id: payload.id, role: payload.role, organizationId: payload.organzationId };
 
         } catch (error) {
             if (error instanceof BadRequestException) {

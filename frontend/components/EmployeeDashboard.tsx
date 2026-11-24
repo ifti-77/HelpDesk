@@ -7,6 +7,7 @@ import UpdateProfile from './UpdateProfile'
 import EmployeeTickets from './EmployeeTickets'
 import Logout from './Logout'
 
+let ORGANIZATION: { organizationName: string, organizationDomain: string } | null = null
 
 function EmployeeDashboard() {
 
@@ -24,6 +25,7 @@ function EmployeeDashboard() {
         if (response.status == 200) {
           const data = await response.data
           setEmployee(data)
+          ORGANIZATION = data.organization
         }
       } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
@@ -38,7 +40,7 @@ function EmployeeDashboard() {
     <main className="min-h-screen bg-slate-100">
       <div className="flex min-h-[calc(100vh)] overflow-hidden bg-white">
         <aside className="w-64 min-h-[calc(100vh)] border-r border-slate-200 bg-slate-950 p-6 text-white">
-          <h1 className="mb-8 text-2xl font-bold">HelpDesk</h1>
+          <h1 className="mb-8 text-2xl font-bold">{ORGANIZATION?.organizationName} </h1>
 
           <nav className="space-y-2">
             <button className={`w-full rounded-sm ${windowPanel === 'dashboard'? 'bg-white text-slate-950' : 'border border-slate-300 hover:bg-slate-800 hover:text-white text-slate-300'} px-4 py-2 text-left font-medium `}

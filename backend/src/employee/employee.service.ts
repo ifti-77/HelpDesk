@@ -75,7 +75,13 @@ export class EmployeeService {
                 isActive: true,
                 createdAt: true,
                 updatedAt: true,
+                organization: {
+                    id: true,
+                    organizationName: true,
+                    organizationDomain: true,
+                },
             },
+            relations: {organization: true},
         });
     }
 

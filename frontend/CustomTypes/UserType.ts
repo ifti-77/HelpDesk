@@ -1,3 +1,4 @@
+import { Organization } from "./OrganizationType";
 import { TicketComment } from "./TicketComment";
 import { Ticket } from "./TicketType";
 
@@ -9,12 +10,13 @@ export enum UserRole {
 
 export interface User{
 
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    isActive: boolean;
-    createdTickets: Ticket[];
-    assignedTickets: Ticket[];
-    comments: TicketComment[];
+    id: string
+    name: string
+    email: string
+    role: UserRole
+    isActive: boolean
+    organization: Organization
+    createdTickets: Ticket[]
+    assignedTickets: Ticket[]
+    comments: TicketComment[]
 }

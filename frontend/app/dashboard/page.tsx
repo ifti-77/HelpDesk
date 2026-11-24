@@ -9,6 +9,7 @@ import AgentDashboard from "@/components/AgentDashboard";
 type VerifyUser = {
   id: string;
   role: UserRole;
+  organizationId: string;
 }
 
 const CheckUserAuthentication = async (): Promise<VerifyUser | null> => {
