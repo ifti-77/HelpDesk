@@ -18,8 +18,14 @@ export class AuthService {
         try {
 
             const user = await this.userRepository.findOne({ where: { email: loginDto.email }, relations: {organization: true} })
+            console.log('User found:', user)
             if (!user) {
                 throw new BadRequestException('No user with this email found')
+            }
+
+            if(!user.organization)
+            {
+                throw new BadRequestException('User is not associated with any organization')
             }
 
             const isMatch = await bcrypt.compare(loginDto.password, user.passwordHash)
@@ -32,7 +38,7 @@ export class AuthService {
                 throw new BadRequestException('You Account has been Deactivated, please contact Admin')
             }
 
-            const payload = { id: user.id, role: user.role, organzationId: user.organization.id }
+            const payload = { id: user.id, role: user.role, organizationId: user.organization.id }
             const accessToken = await this.jwtService.signAsync(payload);
 
             res.cookie('access_token', accessToken, {
@@ -44,6 +50,7 @@ export class AuthService {
 
             return { message: 'Login successful' };
         } catch (error) {
+            
             if (error instanceof InternalServerErrorException) {
                 throw error;
             }
@@ -66,7 +73,8 @@ export class AuthService {
             if (!payload?.id || !payload?.role) {
                 throw new BadRequestException('Invalid token payload');
             }
-            return { id: payload.id, role: payload.role, organizationId: payload.organzationId };
+            console.log('CurrentUser payload:', payload);
+            return { id: payload.id, role: payload.role, organizationId: payload.organizationId };
 
         } catch (error) {
             if (error instanceof BadRequestException) {

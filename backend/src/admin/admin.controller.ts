@@ -50,13 +50,14 @@ export class AdminController {
   @UseGuards(AdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   CreateUser(@Body() userData: CreateUserDto, @Req() request: AuthRequest) {
+    console.log('Organization ID:', request.user.organizationId)
     return this.adminService.CreateUser(request.user.id, request.user.organizationId, userData);
   }
 
   @Get('users')
   @UseGuards(AdminGuard)
   GetUsers(@Req() request: AuthRequest):Promise<UserEntity[] | null> {
-    return this.adminService.GetUsers(request.user.id);
+    return this.adminService.GetUsers(request.user.organizationId, request.user.id);
   }
 
   @Get('users/:userEmail')

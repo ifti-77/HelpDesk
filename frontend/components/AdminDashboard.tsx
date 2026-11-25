@@ -4,7 +4,7 @@ import { User, UserRole } from "@/CustomTypes/UserType"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import { Suspense, useEffect, useRef, useState } from "react"
-import z, { input } from "zod"
+import z from "zod"
 import AdminTickets from "./AdminTickets"
 import UpdateProfile from "./UpdateProfile"
 import Logout from "./Logout"
@@ -202,7 +202,8 @@ function DashBoardComponent({ setWindowPanel }: { setWindowPanel?: (panel: 'dash
 
 const CreateUserSchema = z.object({
   name: z.string("Name is required").min(1, "Name is required"),
-  email: z.string("Email is required").email("Invalid email address"),
+  email: z.string("Email is required").nonempty({ message: "user email is required" })
+        .regex(/^[a-zA-Z0-9._%+-]+$/, { message: "user email should only contain the username part before @" }),
   role: z.enum(['AGENT', 'EMPLOYEE'], "Role must be either AGENT or EMPLOYEE"),
   password: z.string("Password is required").min(6, "Password must be at least 6 characters long"),
   confirmPassword: z.string("Confirm Password is required").min(6, "Confirm Password must be at least 6 characters long")
@@ -422,7 +423,7 @@ function ManageUsers({ props }: { props: 'create' | 'view' }) {
               <label className="block text-sm font-medium text-slate-700">Email</label>
               <span className="text-sm text-red-500">{formError?.email}</span>
               <div>
-                <input type="email" className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3" name="email" />
+                <input type="text" className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3" name="email" />
                 <input type='text' disabled value={`@${ORGANIZATION?.organizationDomain}`} className="mt-1 block w-full rounded-sm border border-gray-300  outline-indigo-300 sm:text-sm py-2 px-3" />
               </div>
               <label className="block text-sm font-medium text-slate-700">Role</label>

@@ -39,6 +39,7 @@ export default function () {
 
             const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, { email, password }, { withCredentials: true })
 
+            console.log(response.data)
             if (response.status === 200) {
 
                 router.push('/dashboard')
@@ -47,6 +48,7 @@ export default function () {
         catch (error) {
             if (axios.isAxiosError(error) && error.response) {
                 setBackendError(error.response.data.message)
+                console.log(error.response.data)
             }
             else {
                 setBackendError('An error occurred while logging in')

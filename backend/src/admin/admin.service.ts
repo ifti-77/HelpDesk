@@ -142,10 +142,24 @@ export class AdminService {
   }
 
   async CreateUser(adminId: string, organizationId: string, userData: CreateUserDto): Promise<UserEntity | null> {
+    
+    if(!organizationId)
+    {
+      throw new BadRequestException('Organization ID is required');
+    }
+    const organization = await this.organizationRepository.findOne({
+      where: {
+        id: organizationId,
+      },
+    })
+    if (organization === null) {
+      throw new BadRequestException('Organization not found');
+    }
+    const userOrganizationEmail = `${userData.email.trim().toLowerCase()}@${organization.organizationDomain.trim().toLowerCase()}`
 
     const existingUser = await this.userRepository.findOne({
       where: {
-        email: userData.email,
+        email: userOrganizationEmail,
       },
     })
 
@@ -153,23 +167,14 @@ export class AdminService {
       throw new BadRequestException('Email already exists');
     }
     
-    const organization = await this.organizationRepository.findOne({
-      where: {
-        id: organizationId,
-      },
-    })
 
-    if (organization === null) {
-      throw new BadRequestException('Organization not found');
-    }
 
     const hashedPassword = await bcrypt.hash(userData.password, 10)
 
-    const userOrganizationEmail = `${userData.email.trim().toLowerCase()}@${organization.organizationDomain.trim().toLowerCase()}`
 
     const user = this.userRepository.create({
       name: userData.name,
-      email: userData.email,
+      email: userOrganizationEmail,
       passwordHash: hashedPassword,
       role: userData.role ?? UserRole.EMPLOYEE,
       organization: organization,
@@ -182,10 +187,10 @@ export class AdminService {
     return savedUser;
   }
 
-  async GetUsers(adminId: string): Promise<UserEntity[] | null> {
+  async GetUsers(organizationId: string, adminId: string): Promise<UserEntity[] | null> {
 
     return this.userRepository.find({
-      where: { id: Not(adminId) },
+      where: { id: Not(adminId), organization: { id: organizationId } },
       select: {
         id: true,
         name: true,
