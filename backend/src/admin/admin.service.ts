@@ -169,13 +169,11 @@ export class AdminService {
     
 
 
-    const hashedPassword = await bcrypt.hash(userData.password, 10)
-
 
     const user = this.userRepository.create({
       name: userData.name,
       email: userOrganizationEmail,
-      passwordHash: hashedPassword,
+      passwordHash: userData.password,
       role: userData.role ?? UserRole.EMPLOYEE,
       organization: organization,
     })
@@ -209,11 +207,13 @@ export class AdminService {
   async GetUserByEmail(
     adminId: string,
     userEmail: string,
+    organizationId: string
   ): Promise<UserEntity[] | null> {
 
     return this.userRepository.find({
       where: {
         email: Like(`${userEmail}%`),
+        organization: { id: organizationId },
         id: Not(adminId)
       },
       select: {
@@ -228,10 +228,10 @@ export class AdminService {
     });
   }
 
-  async GetUserByRole(role: UserRole): Promise<UserEntity[] | null> {
+  async GetUserByRole(organizationId: string, role: UserRole): Promise<UserEntity[] | null> {
 
     return this.userRepository.find({
-      where: { role, isActive: true },
+      where: {organization: { id: organizationId }, role, isActive: true },
       select: {
         id: true,
         name: true,
@@ -313,9 +313,10 @@ export class AdminService {
     return true;
   }
 
-  async GetAllTickets(): Promise<TicketEntity[] | null> {
+  async GetAllTickets(organizationId: string): Promise<TicketEntity[] | null> {
 
     return this.ticketRepository.find({
+      where: { organization: { id: organizationId } },
       relations: {
         createdBy: true,
         assignedTo: true,
@@ -327,10 +328,10 @@ export class AdminService {
     });
   }
 
-  async GetTicketsByStatus(status: TicketStatus): Promise<TicketEntity[] | null> {
+  async GetTicketsByStatus(organizationId: string, status: TicketStatus): Promise<TicketEntity[] | null> {
 
     return this.ticketRepository.find({
-      where: { status }, relations: {
+      where: {organization: { id: organizationId } , status }, relations: {
         createdBy: true,
         assignedTo: true,
         comments: { user: true },
@@ -341,12 +342,12 @@ export class AdminService {
     })
   }
 
-  async GetTicket(
+  async GetTicket(organizationId: string,
     ticketId: string,
   ): Promise<TicketEntity[] | null> {
 
     return this.ticketRepository.find({
-      where: {
+      where: { organization: { id: organizationId },
         id: ticketId,},
         relations:{createdBy: true, assignedTo: true, comments: { user: true }}
       })
@@ -484,18 +485,18 @@ export class AdminService {
     return true;
   }
 
-  async GetAllResourceCounts(adminId: string): Promise<{
+  async GetAllResourceCounts(adminId: string, organizationId: string): Promise<{
     numberOfUser: number,
     numberOfOpenTicket: number,
     numberOfResolvedTicket: number,
     numberOfClosedTicket: number,
     numberOfTicket: number
   }> {
-    const numberOfUser = await this.userRepository.count({ where: { id: Not(adminId) } })
-    const numberOfOpenTicket = await this.ticketRepository.count({ where: { status: TicketStatus.OPEN } })
-    const numberOfResolvedTicket = await this.ticketRepository.count({ where: { status: TicketStatus.RESOLVED } })
-    const numberOfClosedTicket = await this.ticketRepository.count({ where: { status: TicketStatus.CLOSED } })
-    const numberOfTicket = await this.ticketRepository.count()
+    const numberOfUser = await this.userRepository.count({ where: {organization: { id: organizationId } , id: Not(adminId) } })
+    const numberOfOpenTicket = await this.ticketRepository.count({ where: {organization: { id: organizationId } , status: TicketStatus.OPEN } })
+    const numberOfResolvedTicket = await this.ticketRepository.count({ where: {organization: { id: organizationId } , status: TicketStatus.RESOLVED } })
+    const numberOfClosedTicket = await this.ticketRepository.count({ where: {organization: { id: organizationId } , status: TicketStatus.CLOSED } })
+    const numberOfTicket = await this.ticketRepository.count({ where: {organization: { id: organizationId } } })
 
     return { numberOfUser, numberOfOpenTicket, numberOfResolvedTicket, numberOfClosedTicket, numberOfTicket }
   }

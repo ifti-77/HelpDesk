@@ -50,7 +50,7 @@ export class AdminController {
   @UseGuards(AdminGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   CreateUser(@Body() userData: CreateUserDto, @Req() request: AuthRequest) {
-    console.log('Organization ID:', request.user.organizationId)
+
     return this.adminService.CreateUser(request.user.id, request.user.organizationId, userData);
   }
 
@@ -67,7 +67,7 @@ export class AdminController {
     @Req() request: AuthRequest,
   ):Promise<UserEntity[] | null> 
   {
-    return this.adminService.GetUserByEmail(request.user.id, userEmail);
+    return this.adminService.GetUserByEmail(request.user.id, userEmail, request.user.organizationId);
   }
 
   @Get('users/role/:role')
@@ -77,7 +77,7 @@ export class AdminController {
     @Req() request: AuthRequest,
   ):Promise<UserEntity[] | null> 
   {
-    return this.adminService.GetUserByRole(role);
+    return this.adminService.GetUserByRole(request.user.organizationId, role);
   }
 
   @Patch('users/resetpassword/:userId')
@@ -129,7 +129,7 @@ export class AdminController {
   @Get('tickets')
   @UseGuards(AdminGuard)
   GetAllTickets(@Req() request: AuthRequest) {
-    return this.adminService.GetAllTickets();
+    return this.adminService.GetAllTickets(request.user.organizationId);
   }
 
   @Get('tickets/status/:status')
@@ -138,7 +138,7 @@ export class AdminController {
     @Param('status') status: TicketStatus,
     @Req() request: AuthRequest,
   ) {
-    return this.adminService.GetTicketsByStatus(status);
+    return this.adminService.GetTicketsByStatus(request.user.organizationId, status);
   }
 
   @Get('tickets/:ticketId')
@@ -147,7 +147,7 @@ export class AdminController {
     @Param('ticketId', new ParseUUIDPipe()) ticketId: string,
     @Req() request: AuthRequest,
   ): Promise<TicketEntity[] | null> {
-    return this.adminService.GetTicket(ticketId)
+    return this.adminService.GetTicket(request.user.organizationId, ticketId)
   }
 
 
@@ -215,6 +215,6 @@ export class AdminController {
     numberOfClosedTicket: number,
     numberOfTicket: number
   }> {
-    return this.adminService.GetAllResourceCounts(request.user.id)
+    return this.adminService.GetAllResourceCounts(request.user.id, request.user.organizationId)
   }
 }

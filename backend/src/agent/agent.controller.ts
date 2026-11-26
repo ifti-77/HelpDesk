@@ -8,7 +8,7 @@ import { TicketEntity, TicketPriority, TicketStatus } from '../entities/ticket.e
 import { TicketCommentEntity } from 'src/entities/ticketComment.entity';
 
 interface AuthRequest extends Request {
-    user: { id: string; role: string };
+    user: { id: string; role: string; organizationId: string };
 }
 
 @Controller('agent')
@@ -50,7 +50,7 @@ export class AgentController {
     @Get('tickets/status/:status')
     @UseGuards(AgentGuard)
     GetTicketsByStatus(@Req() request: AuthRequest, @Param('status') status: TicketStatus) {
-        return this.agentService.GetTicketsByStatus(request.user.id, status);
+        return this.agentService.GetTicketsByStatus(request.user.id, request.user.organizationId, status);
     }
 
     @Get('tickets/:ticketId')
@@ -60,7 +60,7 @@ export class AgentController {
         @Param('ticketId', new ParseUUIDPipe()) ticketId: string,
         @Req() request: AuthRequest,
     ): Promise<TicketEntity[] | null> {
-        return this.agentService.GetTicket(request.user.id, ticketId)
+        return this.agentService.GetTicket(request.user.id, request.user.organizationId, ticketId)
     }
 
     @Patch('tickets/status/:ticketId')

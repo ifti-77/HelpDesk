@@ -142,10 +142,12 @@ export class AgentService {
   }
 
 
-  async GetTicketsByStatus(agentId: string, status: TicketStatus): Promise<TicketEntity[] | null> {
+
+  async GetTicketsByStatus(agentId: string, organizationId: string, status: TicketStatus): Promise<TicketEntity[] | null> {
 
     return this.ticketRepository.find({
       where: {
+        organization:{id: organizationId},
         assignedTo: {
           id: agentId,
         },
@@ -165,12 +167,14 @@ export class AgentService {
 
   async GetTicket(
     agentId: string,
+    organizationId: string,
     ticketId: string,
   ): Promise<TicketEntity[] | null> {
 
     return this.ticketRepository.find({
       where:{
         id: ticketId,
+        organization: { id: organizationId },
         assignedTo: {
           id: agentId,
         }
@@ -210,9 +214,6 @@ export class AgentService {
     })
 
   }
-
-
-
 
 
   async CreateComment(

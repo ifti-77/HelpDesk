@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UserEntity } from "./user.entity";
 import { TicketCommentEntity } from "./ticketComment.entity";
+import { OrganizationEntity } from "./organization.entity";
 
 export enum TicketStatus {
   OPEN = 'OPEN',
@@ -51,6 +52,10 @@ export class TicketEntity {
 
     @ManyToOne(() => UserEntity, user => user.assignedTickets, { nullable: true })
     assignedTo!: UserEntity | null;
+
+    @ManyToOne(() => OrganizationEntity, organization => organization.tickets)
+    @JoinColumn({ name: 'organizationId' })
+    organization!: OrganizationEntity
 
     @Column({ type: 'enum', enum: Categories })
     category!: Categories;

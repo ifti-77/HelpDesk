@@ -18,7 +18,6 @@ export class AuthService {
         try {
 
             const user = await this.userRepository.findOne({ where: { email: loginDto.email }, relations: {organization: true} })
-            console.log('User found:', user)
             if (!user) {
                 throw new BadRequestException('No user with this email found')
             }
@@ -73,7 +72,7 @@ export class AuthService {
             if (!payload?.id || !payload?.role) {
                 throw new BadRequestException('Invalid token payload');
             }
-            console.log('CurrentUser payload:', payload);
+
             return { id: payload.id, role: payload.role, organizationId: payload.organizationId };
 
         } catch (error) {

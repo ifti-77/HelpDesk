@@ -17,10 +17,11 @@ export class EmployeeService {
         @InjectRepository(TicketCommentEntity) private readonly ticketCommentRepository: Repository<TicketCommentEntity>,
     ) { }
 
-    private async getEmployeeById(employeeId: string): Promise<UserEntity> {
+    private async getEmployeeById(employeeId: string, organizationId: string): Promise<UserEntity> {
         const employee = await this.userRepository.findOne({
             where: {
                 id: employeeId,
+                organization: { id: organizationId },
                 role: UserRole.EMPLOYEE,
                 isActive: true,
             },
@@ -35,11 +36,13 @@ export class EmployeeService {
 
     private async getOwnTicket(
         employeeId: string,
+        organizationId: string,
         ticketId: string,
     ): Promise<TicketEntity> {
         const ticket = await this.ticketRepository.findOne({
             where: {
                 id: ticketId,
+                organization: { id: organizationId },
                 createdBy: {
                     id: employeeId,
                 },
@@ -85,8 +88,8 @@ export class EmployeeService {
         });
     }
 
-    async UpdateEmployeeProfile(employeeId: string, updatedEmployee: EmployeeUpdateDto): Promise<UserEntity | null> {
-        const employee = await this.getEmployeeById(employeeId);
+    async UpdateEmployeeProfile(employeeId: string, organizationId: string, updatedEmployee: EmployeeUpdateDto): Promise<UserEntity | null> {
+        const employee = await this.getEmployeeById(employeeId, organizationId);
 
         if (!employee) {
             throw new NotFoundException('Employee not found');
@@ -112,6 +115,7 @@ export class EmployeeService {
 
     async UpdateEmployeePassword(
         employeeId: string,
+        organizationId: string,
         updatepassword: string,
     ): Promise<UserEntity | null> {
 
@@ -119,7 +123,7 @@ export class EmployeeService {
             throw new BadRequestException('Password must be at least 6 characters');
         }
 
-        const employee = await this.getEmployeeById(employeeId);
+        const employee = await this.getEmployeeById(employeeId, organizationId);
 
         employee.passwordHash = await bcrypt.hash(updatepassword, 10);
 
@@ -132,13 +136,15 @@ export class EmployeeService {
 
     async CreateTicket(
         employeeId: string,
+        organizationId: string,
         ticketData: TicketCreateDto,
     ): Promise<TicketEntity | null> {
-        const employee = await this.getEmployeeById(employeeId);
+        const employee = await this.getEmployeeById(employeeId, organizationId);
 
         const ticket = this.ticketRepository.create({
             ...ticketData,
             createdBy: employee,
+            organization: { id: organizationId },
             assignedTo: null,
             status: TicketStatus.OPEN,
         });
@@ -146,10 +152,11 @@ export class EmployeeService {
         return this.ticketRepository.save(ticket);
     }
 
-    async GetOwnTickets(employeeId: string): Promise<TicketEntity[] | null> {
+    async GetOwnTickets(employeeId: string, organizationId: string): Promise<TicketEntity[] | null> {
 
         return this.ticketRepository.find({
             where: {
+                organization: { id: organizationId },
                 createdBy: {
                     id: employeeId,
                 },
@@ -168,19 +175,23 @@ export class EmployeeService {
 
     async GetTicket(
         employeeId: string,
+        organizationId: string,
         ticketId: string,
     ): Promise<TicketEntity[] | null> {
-        return this.ticketRepository.find({where:{id: ticketId, 
+        return this.ticketRepository.find({where:{id: ticketId,
+            organization: { id: organizationId }, 
         createdBy: { id: employeeId }}, 
         relations:{createdBy: true, assignedTo: true, comments: { user: true }}})
     }
 
     async GetTicketsByStatus(
         employeeId: string,
+        organizationId: string,
         status: TicketStatus,
     ): Promise<TicketEntity[] | null> {
         return this.ticketRepository.find({
             where: {
+                organization: { id: organizationId },
                 createdBy: {
                     id: employeeId,
                 },
@@ -199,10 +210,11 @@ export class EmployeeService {
 
     async UpdateTicket(
         employeeId: string,
+        organizationId: string,
         ticketId: string,
         updatedTicket: TicketUpdateDto,
     ): Promise<TicketEntity | null> {
-        const ticket = await this.getOwnTicket(employeeId, ticketId);
+        const ticket = await this.getOwnTicket(employeeId,organizationId, ticketId);
 
         if (ticket.status !== TicketStatus.OPEN) {
             throw new BadRequestException('Only OPEN tickets can be updated');
@@ -217,15 +229,16 @@ export class EmployeeService {
 
         const savedTicket = await this.ticketRepository.save(ticket)
 
-        return await this.getOwnTicket(employeeId, savedTicket.id)
+        return await this.getOwnTicket(employeeId, organizationId, savedTicket.id)
     }
 
     async UpdateTicketStatus(
         employeeId: string,
+        organizationId: string,
         ticketId: string,
         status: TicketStatus,
     ): Promise<TicketEntity | null> {
-        const ticket = await this.getOwnTicket(employeeId, ticketId);
+        const ticket = await this.getOwnTicket(employeeId, organizationId, ticketId);
 
         if (ticket.status !== TicketStatus.RESOLVED) {
             throw new BadRequestException('Only RESOLVED tickets can be updated');
@@ -235,11 +248,11 @@ export class EmployeeService {
 
         const savedTicket = await this.ticketRepository.save(ticket)
 
-        return await this.getOwnTicket(employeeId, savedTicket.id)
+        return await this.getOwnTicket(employeeId, organizationId, savedTicket.id)
     }
 
-    async DeleteTicket(employeeId: string, ticketId: string): Promise<boolean> {
-        const ticket = await this.getOwnTicket(employeeId, ticketId);
+    async DeleteTicket(employeeId: string,organizationId: string, ticketId: string): Promise<boolean> {
+        const ticket = await this.getOwnTicket(employeeId, organizationId, ticketId);
 
         if (ticket.status !== TicketStatus.OPEN) {
             throw new BadRequestException('Only OPEN tickets can be deleted');
@@ -252,6 +265,7 @@ export class EmployeeService {
 
     async CreateComment(
         employeeId: string,
+        organizationId: string,
         ticketId: string,
         comment: string,
     ): Promise<TicketCommentEntity | null> {
@@ -259,8 +273,8 @@ export class EmployeeService {
             throw new BadRequestException('Comment is required');
         }
 
-        const employee = await this.getEmployeeById(employeeId);
-        const ticket = await this.getOwnTicket(employeeId, ticketId);
+        const employee = await this.getEmployeeById(employeeId, organizationId);
+        const ticket = await this.getOwnTicket(employeeId, organizationId, ticketId);
 
         if (ticket.status === TicketStatus.CLOSED) {
             throw new BadRequestException('Cannot comment on a closed ticket');

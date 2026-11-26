@@ -10,7 +10,7 @@ import { TicketCommentEntity } from "src/entities/ticketComment.entity";
 import { TicketUpdateDto } from "./DTOs/ticketUpdate.dto";
 
 export interface AuthRequest extends Request {
-    user: { id: string }
+    user: { id: string, role: string, organizationId: string };
 }
 
 
@@ -31,63 +31,63 @@ export class EmployeeController {
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     UpdateEmployeeProfile(@Body() updatedEmployee: EmployeeUpdateDto, @Req() request: AuthRequest): Promise<UserEntity | null> {
-        return this.employeeService.UpdateEmployeeProfile(request.user.id ,updatedEmployee);
+        return this.employeeService.UpdateEmployeeProfile(request.user.id , request.user.organizationId, updatedEmployee);
     }
 
     @Patch("/profile/password")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     UpdateEmployeePassword(@Body('password') updatepassword: string, @Req() request: AuthRequest): Promise<UserEntity | null> {
-        return this.employeeService.UpdateEmployeePassword(request.user.id ,updatepassword);
+        return this.employeeService.UpdateEmployeePassword(request.user.id ,request.user.organizationId, updatepassword);
     }
 
     @Post("/tickets")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     CreateTicket(@Body() ticketData: TicketCreateDto, @Req() request: AuthRequest): Promise<TicketEntity | null> {
-        return this.employeeService.CreateTicket(request.user.id ,ticketData);
+        return this.employeeService.CreateTicket(request.user.id , request.user.organizationId, ticketData);
     }
 
     @Get("/tickets")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     GetTickets(@Req() request: AuthRequest): Promise<TicketEntity[] | null> {
-        return this.employeeService.GetOwnTickets(request.user.id );
+        return this.employeeService.GetOwnTickets(request.user.id, request.user.organizationId)
     }
 
     @Get("/tickets/:ticketId")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     GetTicket(@Param('ticketId', new ParseUUIDPipe()) ticketId: string, @Req() request: AuthRequest): Promise<TicketEntity[] | null> {
-        return this.employeeService.GetTicket(request.user.id ,ticketId);
+        return this.employeeService.GetTicket(request.user.id, request.user.organizationId, ticketId);
     }
 
     @Get("/tickets/status/:status")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     GetTicketsByStatus(@Param('status') status: TicketStatus, @Req() request: AuthRequest): Promise<TicketEntity[] | null> {
-        return this.employeeService.GetTicketsByStatus(request.user.id ,status);
+        return this.employeeService.GetTicketsByStatus(request.user.id ,request.user.organizationId, status);
     }
 
     @Put("/tickets/:ticketId")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     UpdateTicket(@Param('ticketId') ticketId: string, @Body() updatedTicket: TicketUpdateDto, @Req() request: AuthRequest): Promise<TicketEntity | null> {
-        return this.employeeService.UpdateTicket(request.user.id ,ticketId, updatedTicket);
+        return this.employeeService.UpdateTicket(request.user.id ,request.user.organizationId, ticketId, updatedTicket);
     }
 
     @Patch("/tickets/status/:ticketId")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     UpdateTicketStatus(@Param('ticketId') ticketId: string, @Body('status') status: TicketStatus, @Req() request: AuthRequest): Promise<TicketEntity | null> {
-        return this.employeeService.UpdateTicketStatus(request.user.id ,ticketId, status);
+        return this.employeeService.UpdateTicketStatus(request.user.id ,request.user.organizationId, ticketId, status);
     }
 
     @Delete("/tickets/:ticketId")
     @UseGuards(EmployeeGuard)
     @UsePipes(new ValidationPipe({whitelist: true}))
     DeleteTicket(@Param('ticketId') ticketId: string, @Req() request: AuthRequest): Promise<boolean> {
-        return this.employeeService.DeleteTicket(request.user.id ,ticketId);
+        return this.employeeService.DeleteTicket(request.user.id ,request.user.organizationId, ticketId);
     }
 
     @Post("/tickets/comments/:ticketId")
@@ -95,7 +95,7 @@ export class EmployeeController {
     @UsePipes(new ValidationPipe({whitelist: true}))
     CreateComment(@Param('ticketId') ticketId: string, 
     @Body('comment') comment: string, @Req() request: AuthRequest): Promise<TicketCommentEntity | null> {
-        return this.employeeService.CreateComment(request.user.id ,ticketId, comment);
+        return this.employeeService.CreateComment(request.user.id, request.user.organizationId, ticketId, comment);
     }
 
 

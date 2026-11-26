@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserEntity } from "./user.entity";
+import { TicketEntity } from "./ticket.entity";
 
 
 @Entity('organizations')
@@ -16,6 +17,9 @@ export class OrganizationEntity {
 
     @OneToMany(() => UserEntity, (user) => user.organization)
     organizationEmployees!: UserEntity[]
+
+    @OneToMany(() => TicketEntity, (ticket) => ticket.organization, {nullable: true})
+    tickets!: TicketEntity[]
 
 
 }

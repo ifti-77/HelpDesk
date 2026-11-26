@@ -37,7 +37,6 @@ export class AdminGuard implements CanActivate {
         throw new ForbiddenException('Only admins can access this route');
       }
 
-      console.log('AdminGuard payload:', payload);
 
       request['user'] = payload;
 
