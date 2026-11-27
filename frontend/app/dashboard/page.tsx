@@ -22,9 +22,10 @@ const CheckUserAuthentication = async (): Promise<VerifyUser | null> => {
   try
   {
 
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/check-logged-in-user`, {
+    const response = await axios.get(`${process.env.BACKEND_URL}/auth/check-logged-in-user`, {
       headers: {
-        Cookie: `access_token=${accessToken}`
+        Cookie: `access_token=${accessToken}`,
+        Authorization: `Bearer ${accessToken}`
       },
     })
     if (response.status === 200) {
@@ -36,7 +37,7 @@ const CheckUserAuthentication = async (): Promise<VerifyUser | null> => {
       if (error.response.status === 401) {
         return null
       }
-      alert(`Failed: ${error.response.status} - ${error.response.data.message || 'An error occurred while verifying user authentication.'}`)
+      // alert(`Failed: ${error.response.status} - ${error.response.data.message || 'An error occurred while verifying user authentication.'}`)
     }
   }
     return null
