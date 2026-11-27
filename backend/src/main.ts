@@ -12,13 +12,13 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: `${process.env.SERVER_ADDRESS}:${process.env.FRONTEND_PORT}`,
+    origin: `${process.env.FRONTEND_URL}`,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   });
 
-  await app.listen(process.env.PORT??5000);
+  await app.listen(process.env.PORT??5001);
 
   
 }
